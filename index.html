@@ -1,361 +1,492 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grade Portal — Baganga NHS</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grade Portal — Baganga NHS</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --blue:       #1a56db;
-      --blue-dark:  #1341b0;
-      --blue-light: #e8f0fe;
-      --red:        #dc2626;
-      --gray-50:    #f8fafc;
-      --gray-100:   #f1f5f9;
-      --gray-200:   #e2e8f0;
-      --gray-400:   #94a3b8;
-      --gray-600:   #475569;
-      --gray-900:   #0f172a;
-      --white:      #ffffff;
-      --radius:     14px;
-      --shadow:     0 4px 24px rgba(0,0,0,0.10);
-    }
+  :root {
+    --blue:       #1a6fdb;
+    --blue-dark:  #1258b8;
+    --blue-light: #e8f1fc;
+    --blue-mid:   #bcd4f7;
+    --text:       #1a1e2a;
+    --text-sub:   #5a6175;
+    --text-hint:  #9099ae;
+    --border:     #dde2ee;
+    --surface:    #f4f6fb;
+    --white:      #ffffff;
+    --red:        #d93a3a;
+    --green:      #1a9e5c;
+    --radius:     14px;
+    --shadow:     0 2px 16px rgba(26,111,219,0.10), 0 1px 4px rgba(0,0,0,0.06);
+  }
 
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background: var(--gray-50);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 16px;
-    }
+  html, body {
+    height: 100%;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--surface);
+    color: var(--text);
+  }
 
-    /* ── background accent ── */
-    body::before {
-      content: '';
-      position: fixed;
-      top: -120px; left: 50%;
-      transform: translateX(-50%);
-      width: 600px; height: 400px;
-      background: radial-gradient(ellipse at center, #dbeafe 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
 
-    .card {
-      position: relative;
-      z-index: 1;
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      width: 100%;
-      max-width: 400px;
-      padding: 40px 32px 36px;
-      animation: fadeUp 0.45s ease both;
-    }
+  /* Background pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(26,111,219,0.10) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 90% 90%, rgba(26,111,219,0.06) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(18px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+  .card {
+    position: relative;
+    z-index: 1;
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    width: 100%;
+    max-width: 400px;
+    padding: 40px 32px 36px;
+    animation: fadeUp .45s cubic-bezier(.22,.68,0,1.2) both;
+  }
 
-    /* ── school branding ── */
-    .brand {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 32px;
-      text-align: center;
-    }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
-    .brand-icon {
-      width: 56px; height: 56px;
-      background: var(--blue);
-      border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
-    }
+  /* School header */
+  .school-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    background: var(--blue-light);
+    border-radius: 14px;
+    margin: 0 auto 16px;
+  }
 
-    .brand-icon svg { width: 28px; height: 28px; fill: white; }
+  .school-badge svg {
+    width: 28px;
+    height: 28px;
+    fill: var(--blue);
+  }
 
-    .brand-school {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--gray-400);
-    }
+  .school-name {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--blue);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
 
-    .brand-title {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--gray-900);
-      line-height: 1.2;
-    }
+  .school-sub {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-hint);
+    margin-bottom: 28px;
+  }
 
-    /* ── form fields ── */
-    .field {
-      margin-bottom: 16px;
-    }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+    text-align: center;
+  }
 
-    .field label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--gray-600);
-      margin-bottom: 6px;
-    }
+  .tagline {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-sub);
+    margin-bottom: 28px;
+  }
 
-    .field input {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1.5px solid var(--gray-200);
-      border-radius: 10px;
-      font-family: inherit;
-      font-size: 15px;
-      color: var(--gray-900);
-      background: var(--white);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 24px;
+  }
 
-    .field input:focus {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 3px rgba(26,86,219,0.12);
-    }
+  /* Form */
+  .field {
+    margin-bottom: 16px;
+  }
 
-    .field input::placeholder { color: var(--gray-400); }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
 
-    /* ── password wrapper with toggle ── */
-    .pw-wrap {
-      position: relative;
-    }
+  .input-wrap {
+    position: relative;
+  }
 
-    .pw-wrap input { padding-right: 44px; }
+  .input-wrap svg {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    stroke: var(--text-hint);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+    transition: stroke .2s;
+  }
 
-    .pw-toggle {
-      position: absolute;
-      right: 12px; top: 50%;
-      transform: translateY(-50%);
-      background: none; border: none; cursor: pointer;
-      color: var(--gray-400);
-      padding: 4px;
-      display: flex; align-items: center;
-    }
+  input {
+    width: 100%;
+    padding: 11px 12px 11px 38px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--white);
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+    -webkit-appearance: none;
+  }
 
-    .pw-toggle:hover { color: var(--gray-600); }
+  input::placeholder { color: var(--text-hint); }
 
-    /* ── error message ── */
-    .error-msg {
-      display: none;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: var(--red);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 16px;
-    }
+  input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(26,111,219,0.12);
+  }
 
-    .error-msg.show { display: block; }
+  input:focus + svg,
+  .input-wrap:focus-within svg { stroke: var(--blue); }
 
-    /* ── submit button ── */
-    .btn-login {
-      width: 100%;
-      padding: 13px;
-      background: var(--blue);
-      color: var(--white);
-      border: none;
-      border-radius: 10px;
-      font-family: inherit;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      margin-top: 4px;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
+  /* Password toggle */
+  .pw-wrap { position: relative; }
 
-    .btn-login:hover  { background: var(--blue-dark); }
-    .btn-login:active { transform: scale(0.985); }
-    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
+  .pw-wrap input { padding-right: 44px; }
 
-    /* spinner */
-    .spinner {
-      display: none;
-      width: 18px; height: 18px;
-      border: 2px solid rgba(255,255,255,0.4);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
+  .pw-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--text-hint);
+    display: flex;
+    align-items: center;
+    transition: color .2s;
+  }
 
-    .btn-login.loading .spinner { display: block; }
-    .btn-login.loading .btn-text { display: none; }
+  .pw-toggle:hover { color: var(--blue); }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+  .pw-toggle svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
 
-    /* ── footer note ── */
-    .note {
-      text-align: center;
-      font-size: 12px;
-      color: var(--gray-400);
-      margin-top: 24px;
-    }
-  </style>
+  /* Error message */
+  .error-box {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: #fff0f0;
+    border: 1px solid #f5c0c0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--red);
+  }
+
+  .error-box.show { display: flex; }
+
+  .error-box svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    stroke: var(--red);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Submit button */
+  .btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, transform .1s, box-shadow .2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(26,111,219,0.25);
+  }
+
+  .btn:hover { background: var(--blue-dark); box-shadow: 0 4px 16px rgba(26,111,219,0.30); }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { background: var(--blue-mid); cursor: not-allowed; box-shadow: none; }
+
+  .btn .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+  }
+
+  .btn.loading .spinner { display: block; }
+  .btn.loading .btn-text { display: none; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Footer */
+  .footer {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-hint);
+    line-height: 1.6;
+  }
+
+  /* LRN helper */
+  .field-hint {
+    font-size: 11px;
+    color: var(--text-hint);
+    margin-top: 5px;
+  }
+</style>
 </head>
 <body>
 
-  <div class="card">
-    <div class="brand">
-      <div class="brand-icon">
-        <!-- graduation cap icon -->
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
-        </svg>
-      </div>
-      <span class="brand-school">Baganga National High School</span>
-      <span class="brand-title">Grade Portal</span>
-    </div>
+<div class="card">
+
+  <!-- School header -->
+  <div class="school-badge">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 3L2 8l10 5 10-5-10-5zM2 13l10 5 10-5M2 18l10 5 10-5"/>
+    </svg>
+  </div>
+  <div class="school-name">Baganga National High School</div>
+  <div class="school-sub">Junior High School Grade Portal</div>
+
+  <h1>Student Login</h1>
+  <p class="tagline">Sign in to view your grades</p>
+
+  <div class="divider"></div>
+
+  <!-- Error box -->
+  <div class="error-box" id="errorBox">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span id="errorMsg">Incorrect LRN or password.</span>
+  </div>
+
+  <!-- Form -->
+  <form id="loginForm" autocomplete="off">
 
     <div class="field">
       <label for="lrn">Learner Reference Number (LRN)</label>
-      <input
-        type="text"
-        id="lrn"
-        placeholder="Enter your 12-digit LRN"
-        maxlength="12"
-        inputmode="numeric"
-        autocomplete="username"
-      />
+      <div class="input-wrap">
+        <input
+          type="text"
+          id="lrn"
+          name="lrn"
+          placeholder="Enter your 12-digit LRN"
+          maxlength="12"
+          inputmode="numeric"
+          autocomplete="off"
+          required
+        >
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="13" y2="13"/></svg>
+      </div>
+      <div class="field-hint">12 digits — no spaces or dashes</div>
     </div>
 
     <div class="field">
       <label for="password">Password</label>
-      <div class="pw-wrap">
+      <div class="input-wrap pw-wrap">
         <input
           type="password"
           id="password"
+          name="password"
           placeholder="Enter your password"
           autocomplete="current-password"
-        />
-        <button class="pw-toggle" id="pwToggle" type="button" aria-label="Toggle password visibility">
-          <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
+          required
+        >
+        <svg viewBox="0 0 24 24" style="left:13px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password">
+          <svg id="eyeIcon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
       </div>
+      <div class="field-hint">Default password is your LRN — you will be asked to change it on first login</div>
     </div>
 
-    <div class="error-msg" id="errorMsg"></div>
-
-    <button class="btn-login" id="loginBtn" type="button">
-      <span class="btn-text">Log In</span>
+    <button type="submit" class="btn" id="loginBtn">
       <div class="spinner"></div>
+      <span class="btn-text">Sign In</span>
     </button>
 
-    <p class="note">Use your LRN as your default password on first login.</p>
-  </div>
+  </form>
 
-  <script src="config.js?v=2"></script>
-  <script>
-    const API_URL = CENTRAL_API;
+</div>
 
-    const lrnInput   = document.getElementById("lrn");
-    const pwInput    = document.getElementById("password");
-    const loginBtn   = document.getElementById("loginBtn");
-    const errorMsg   = document.getElementById("errorMsg");
-    const pwToggle   = document.getElementById("pwToggle");
-    const eyeIcon    = document.getElementById("eyeIcon");
+<div class="footer">
+  Baganga National High School &nbsp;·&nbsp; DepEd Region XI<br>
+  For account issues, contact your class adviser.
+</div>
 
-    // ── password visibility toggle ──
-    pwToggle.addEventListener("click", () => {
-      const isHidden = pwInput.type === "password";
-      pwInput.type = isHidden ? "text" : "password";
-      eyeIcon.innerHTML = isHidden
-        ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
-        : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
-    });
+<!-- Load config -->
+<script src="config.js"></script>
 
-    // ── allow Enter key to submit ──
-    [lrnInput, pwInput].forEach(el => {
-      el.addEventListener("keydown", e => {
-        if (e.key === "Enter") handleLogin();
+<script>
+  const form = document.getElementById('loginForm');
+  const lrnInput = document.getElementById('lrn');
+  const pwInput = document.getElementById('password');
+  const loginBtn = document.getElementById('loginBtn');
+  const errorBox = document.getElementById('errorBox');
+  const errorMsg = document.getElementById('errorMsg');
+  const pwToggle = document.getElementById('pwToggle');
+  const eyeIcon = document.getElementById('eyeIcon');
+
+  // LRN: numbers only
+  lrnInput.addEventListener('input', () => {
+    lrnInput.value = lrnInput.value.replace(/\D/g, '').slice(0, 12);
+  });
+
+  // Password visibility toggle
+  let pwVisible = false;
+  pwToggle.addEventListener('click', () => {
+    pwVisible = !pwVisible;
+    pwInput.type = pwVisible ? 'text' : 'password';
+    eyeIcon.innerHTML = pwVisible
+      ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+      : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  });
+
+  // Show error
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorBox.classList.add('show');
+  }
+
+  function hideError() {
+    errorBox.classList.remove('show');
+  }
+
+  // SHA-256 hash
+  async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // Login form submit
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError();
+
+    const lrn = lrnInput.value.trim();
+    const password = pwInput.value;
+
+    // Basic validation
+    if (lrn.length !== 12) {
+      showError('Please enter your 12-digit LRN.');
+      lrnInput.focus();
+      return;
+    }
+
+    if (!password) {
+      showError('Please enter your password.');
+      pwInput.focus();
+      return;
+    }
+
+    // Hash the password
+    const hashed = await sha256(password + SALT);
+
+    // Set loading state
+    loginBtn.classList.add('loading');
+    loginBtn.disabled = true;
+
+    try {
+      const params = new URLSearchParams({
+        action: 'login',
+        lrn: lrn,
+        password: hashed
       });
-    });
 
-    loginBtn.addEventListener("click", handleLogin);
+      const response = await fetch(`${CENTRAL_API}?${params}`);
+      const data = await response.json();
 
-    function showError(msg) {
-      errorMsg.textContent = msg;
-      errorMsg.classList.add("show");
-    }
+      if (data.success) {
+        // Store session
+        localStorage.setItem('gp_token', data.token);
+        localStorage.setItem('gp_lrn', data.lrn);
+        localStorage.setItem('gp_name', data.name);
+        localStorage.setItem('gp_section', data.section);
 
-    function clearError() {
-      errorMsg.classList.remove("show");
-    }
-
-    function setLoading(on) {
-      loginBtn.disabled = on;
-      loginBtn.classList.toggle("loading", on);
-    }
-
-    async function handleLogin() {
-      clearError();
-
-      const lrn      = lrnInput.value.trim();
-      const password = pwInput.value.trim();
-
-      if (!lrn) { showError("Please enter your LRN."); lrnInput.focus(); return; }
-      if (lrn.length !== 12 || !/^\d+$/.test(lrn)) {
-        showError("LRN must be exactly 12 digits."); lrnInput.focus(); return;
-      }
-      if (!password) { showError("Please enter your password."); pwInput.focus(); return; }
-
-      setLoading(true);
-
-      try {
-        const res = await fetch(API_URL, {
-  method: "POST",
-  redirect: "follow",
-  headers: { "Content-Type": "text/plain" },
-  body: JSON.stringify({ action: "login", lrn, password })
-});
-
-        const data = await res.json();
-
-        if (!data.success) {
-          showError(data.message || "Login failed. Please try again.");
-          return;
-        }
-
-        // Save session
-        localStorage.setItem("gp_token", data.token);
-        localStorage.setItem("gp_lrn",   data.lrn);
-
-        // Redirect based on password status
-        if (data.passwordChanged === false || data.passwordChanged === "FALSE") {
-          window.location.href = "change-password.html?first=true";
+        // Redirect
+        if (data.passwordChanged === false || data.passwordChanged === 'FALSE') {
+          window.location.href = 'change-password.html?first=true';
         } else {
-          window.location.href = "dashboard.html";
+          window.location.href = 'dashboard.html';
         }
-
-      } catch (err) {
-        showError("Cannot connect to the server. Please check your internet connection.");
-      } finally {
-        setLoading(false);
+      } else {
+        showError(data.error || 'Incorrect LRN or password. Please try again.');
       }
+
+    } catch (err) {
+      showError('Could not connect. Please check your internet and try again.');
+    } finally {
+      loginBtn.classList.remove('loading');
+      loginBtn.disabled = false;
     }
-  </script>
+  });
+</script>
 
 </body>
 </html>
