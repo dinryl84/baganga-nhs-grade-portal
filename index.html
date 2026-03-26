@@ -325,9 +325,11 @@
 
       try {
         const res = await fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "login", lrn, password })
-        });
+  method: "POST",
+  redirect: "follow",
+  headers: { "Content-Type": "text/plain" },
+  body: JSON.stringify({ action: "login", lrn, password })
+});
 
         const data = await res.json();
 
