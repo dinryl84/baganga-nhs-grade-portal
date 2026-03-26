@@ -1,7 +1,6 @@
 // config.js
 // Central API — handles login and password change for all students
-const CENTRAL_API = "https://script.google.com/macros/s/AKfycbw-3_fW6VauqmBJx_5B8ienwZ4WCn-lQ_kSYA4cfaUhpWgch2Y9tL8hlh1xy4azN9IC/exec";
-
+const CENTRAL_API = "https://script.google.com/macros/s/AKfycbxGngqSATA2aY7gciwFsuyOnu-ZDGP8C-BzIYks2O1fhOmexY_YC-1XwFB6GUzS363-/exec";
 // Salt — must match the salt used in both Apps Scripts
 const SALT = "baganga_nhs_2025";
 
