@@ -551,8 +551,10 @@
     ];
 
     // Session check
-    const token = localStorage.getItem("gp_token");
-    const lrn   = localStorage.getItem("gp_lrn");
+    localStorage.setItem("gp_token",   data.token);
+localStorage.setItem("gp_lrn",     data.lrn);
+localStorage.setItem("gp_name",    data.name);
+localStorage.setItem("gp_section", data.section);
     if (!token || !lrn) {
       window.location.href = "index.html";
     }
