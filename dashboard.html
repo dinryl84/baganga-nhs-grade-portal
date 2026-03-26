@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Grades — Baganga NHS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:        #1a56db;
+      --blue-dark:   #1341b0;
+      --blue-light:  #e8f0fe;
+      --blue-mid:    #3b82f6;
+      --green:       #16a34a;
+      --green-light: #dcfce7;
+      --red:         #dc2626;
+      --red-light:   #fef2f2;
+      --amber:       #d97706;
+      --amber-light: #fef3c7;
+      --gray-50:     #f8fafc;
+      --gray-100:    #f1f5f9;
+      --gray-200:    #e2e8f0;
+      --gray-300:    #cbd5e1;
+      --gray-400:    #94a3b8;
+      --gray-500:    #64748b;
+      --gray-600:    #475569;
+      --gray-700:    #334155;
+      --gray-900:    #0f172a;
+      --white:       #ffffff;
+      --radius:      14px;
+      --shadow:      0 2px 12px rgba(0,0,0,0.08);
+      --nav-h:       64px;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--gray-50);
+      min-height: 100vh;
+      padding-bottom: calc(var(--nav-h) + 16px);
+    }
+
+    /* ── TOP HEADER ── */
+    .top-header {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 16px 20px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon {
+      width: 40px; height: 40px;
+      background: var(--blue);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .header-icon svg { width: 20px; height: 20px; fill: white; }
+
+    .header-text { flex: 1; min-width: 0; }
+
+    .header-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gray-900);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header-sub {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-top: 1px;
+    }
+
+    /* ── MAIN CONTENT AREA ── */
+    .main {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px 16px 0;
+    }
+
+    /* ── LOADING STATE ── */
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      gap: 14px;
+    }
+
+    .loading-spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 14px;
+      color: var(--gray-500);
+      font-weight: 500;
+    }
+
+    /* ── ERROR STATE ── */
+    .error-state {
+      display: none;
+      background: var(--red-light);
+      border: 1px solid #fecaca;
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .error-state p {
+      color: var(--red);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .error-state .retry-btn {
+      margin-top: 12px;
+      padding: 8px 20px;
+      background: var(--red);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* ── CONTENT (hidden until loaded) ── */
+    .content { display: none; }
+
+    /* ── PERIOD BADGE ── */
+    .period-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .period-badge.blue   { background: var(--blue-light); color: var(--blue-dark); }
+    .period-badge.amber  { background: var(--amber-light); color: var(--amber); }
+    .period-badge.green  { background: var(--green-light); color: var(--green); }
+
+    .period-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+
+    /* ── SUMMARY CARDS ROW ── */
+    .summary-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .summary-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--gray-200);
+    }
+
+    .summary-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gray-400);
+      margin-bottom: 4px;
+    }
+
+    .summary-value {
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .summary-value.green  { color: var(--green); }
+    .summary-value.blue   { color: var(--blue); }
+    .summary-value.red    { color: var(--red); }
+    .summary-value.gray   { color: var(--gray-400); font-size: 18px; }
+    .summary-value.amber  { color: var(--amber); }
+
+    .summary-note {
+      font-size: 11px;
+      color: var(--gray-400);
+      margin-top: 3px;
+    }
+
+    /* ── QUARTER TAB SWITCHER ── */
+    .quarter-switcher {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+      background: var(--gray-100);
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .q-tab {
+      flex: 1;
+      padding: 9px 4px;
+      border: none;
+      border-radius: 9px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: transparent;
+      color: var(--gray-500);
+      transition: all 0.18s ease;
+      text-align: center;
+    }
+
+    .q-tab.active {
+      background: var(--white);
+      color: var(--blue);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+    }
+
+    .q-tab.done {
+      color: var(--gray-600);
+    }
+
+    .q-tab.pending {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-400);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    /* ── SUBJECT CARDS ── */
+    .subject-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--gray-200);
+      margin-bottom: 10px;
+      overflow: hidden;
+      animation: fadeIn 0.3s ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 10px;
+    }
+
+    .subject-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .subject-avg {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .subject-avg.passed { color: var(--green); }
+    .subject-avg.failed { color: var(--red); }
+    .subject-avg.pending { color: var(--gray-400); font-size: 16px; }
+
+    /* ── REMARKS PILL ── */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+
+    .pill.passed { background: var(--green-light); color: var(--green); }
+    .pill.failed { background: var(--red-light);   color: var(--red); }
+
+    /* ── QUARTER CELLS ROW ── */
+    .card-grades {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--gray-100);
+    }
+
+    .grade-cell {
+      text-align: center;
+      padding: 10px 4px;
+      border-right: 1px solid var(--gray-100);
+      position: relative;
+    }
+
+    .grade-cell:last-child { border-right: none; }
+
+    .grade-cell.highlighted {
+      background: var(--blue-light);
+    }
+
+    .cell-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--gray-400);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .cell-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    .cell-value.low   { color: var(--red); }
+    .cell-value.dash  { color: var(--gray-300); font-weight: 500; }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: var(--white);
+      border-top: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 100;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 20px;
+      border-radius: 10px;
+      transition: background 0.15s;
+      text-decoration: none;
+      color: var(--gray-400);
+    }
+
+    .nav-btn.active { color: var(--blue); }
+    .nav-btn:hover  { background: var(--gray-100); }
+
+    .nav-btn svg {
+      width: 22px; height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .nav-label {
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* ── OVERALL RESULT CARD ── */
+    .overall-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .overall-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-600);
+    }
+
+    .overall-value {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .overall-avg {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .overall-avg.passed { color: var(--green); }
+    .overall-avg.failed { color: var(--red); }
+
+    .big-pill {
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .big-pill.passed { background: var(--green-light); color: var(--green); }
+    .big-pill.failed { background: var(--red-light);   color: var(--red); }
+  </style>
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="top-header">
+    <div class="header-inner">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+      </div>
+      <div class="header-text">
+        <div class="header-name" id="studentName">Loading…</div>
+        <div class="header-sub" id="studentMeta"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Loading -->
+    <div class="loading-state" id="loadingState">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Loading your grades…</p>
+    </div>
+
+    <!-- Error -->
+    <div class="error-state" id="errorState">
+      <p id="errorText">Could not load grades.</p>
+      <button class="retry-btn" onclick="loadGrades()">Retry</button>
+    </div>
+
+    <!-- Content -->
+    <div class="content" id="content">
+
+      <!-- Period Badge -->
+      <div id="periodBadge" class="period-badge blue">
+        <span class="period-dot"></span>
+        <span id="periodText">Loading…</span>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="summary-row">
+        <div class="summary-card">
+          <div class="summary-label" id="qAvgLabel">Q1 Average</div>
+          <div class="summary-value" id="qAvgValue">—</div>
+          <div class="summary-note" id="qAvgNote"></div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">General Average</div>
+          <div class="summary-value gray" id="genAvgValue">—</div>
+          <div class="summary-note" id="genAvgNote">Available after Q4</div>
+        </div>
+      </div>
+
+      <!-- Quarter Tabs -->
+      <div class="quarter-switcher" id="quarterSwitcher">
+        <button class="q-tab" data-q="1" onclick="switchTab(1)">Q1</button>
+        <button class="q-tab" data-q="2" onclick="switchTab(2)">Q2</button>
+        <button class="q-tab" data-q="3" onclick="switchTab(3)">Q3</button>
+        <button class="q-tab" data-q="4" onclick="switchTab(4)">Q4</button>
+      </div>
+
+      <!-- Overall Result (only shown when Q4 selected and all done) -->
+      <div class="overall-card" id="overallCard" style="display:none;">
+        <span class="overall-label">General Average</span>
+        <div class="overall-value">
+          <span class="overall-avg" id="overallAvgDisplay">—</span>
+          <span class="big-pill" id="overallPill">—</span>
+        </div>
+      </div>
+
+      <!-- Subject Cards -->
+      <div class="section-label">Subjects</div>
+      <div id="subjectCards"></div>
+
+    </div>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="window.location.href='dashboard.html'">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="nav-label">Grades</span>
+    </button>
+    <button class="nav-btn" onclick="window.location.href='profile.html'">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="nav-label">Profile</span>
+    </button>
+    <button class="nav-btn" onclick="window.location.href='change-password.html'">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span class="nav-label">Password</span>
+    </button>
+  </nav>
+
+  <script src="config.js"></script>
+  <script>
+    const API_URL = CENTRAL_API;
+
+    const SUBJECTS_ORDER = [
+      "Filipino", "English", "Mathematics", "Science",
+      "Araling Panlipunan", "MAPEH", "TLE", "ESP"
+    ];
+
+    // Session check
+    const token = localStorage.getItem("gp_token");
+    const lrn   = localStorage.getItem("gp_lrn");
+    if (!token || !lrn) {
+      window.location.href = "index.html";
+    }
+
+    // State
+    let gradesData   = null;  // raw API response
+    let currentTab   = 1;     // which Q tab is active
+    let currentQuarter = 1;   // which quarter is actually current (determined from data)
+
+    // ── LOAD GRADES FROM ALL SUBJECT APIs ──
+    async function loadGrades() {
+      showLoading(true);
+      hideError();
+
+      try {
+        // Get section from localStorage and find subjects for this section
+        const section = localStorage.getItem("gp_section");
+        if (!section || !SECTIONS[section]) {
+          showError("Section not found in configuration.");
+          return;
+        }
+
+        const subjectList = SECTIONS[section];
+
+        // Fetch grades from all subject APIs in parallel
+        const results = await Promise.all(
+          subjectList.map(({ subject, url, tab }) =>
+            fetch(url, {
+              method: "POST",
+              body: JSON.stringify({ action: "getGrades", lrn, tab })
+            })
+              .then(r => r.json())
+              .then(data => ({ ...data, subject })) // attach display name from config
+              .catch(() => ({ success: true, subject, tab, q1: null, q2: null, q3: null, q4: null, missing: true }))
+          )
+        );
+
+        // Combine results into the format expected by renderPage
+        const name = localStorage.getItem("gp_name") || "Student";
+        const studentLrn = localStorage.getItem("gp_lrn") || lrn;
+        const studentSection = localStorage.getItem("gp_section") || "Unknown";
+
+        gradesData = {
+          success: true,
+          name: name,
+          lrn: studentLrn,
+          section: studentSection,
+          grades: results.map(result => ({
+            subject: result.subject,
+            q1: result.q1,
+            q2: result.q2,
+            q3: result.q3,
+            q4: result.q4
+          }))
+        };
+
+        renderPage();
+
+      } catch (err) {
+        showError("Cannot connect to the server. Please check your internet connection.");
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // ── RENDER FULL PAGE ──
+    function renderPage() {
+      const { name, lrn: studentLrn, section, grades } = gradesData;
+
+      // Header
+      document.getElementById("studentName").textContent = name;
+      document.getElementById("studentMeta").textContent = `LRN: ${studentLrn} · ${section}`;
+
+      // Determine current quarter from data
+      currentQuarter = detectCurrentQuarter(grades);
+      currentTab = currentQuarter;
+
+      // Set up tabs
+      setupTabs();
+
+      // Show content
+      document.getElementById("content").style.display = "block";
+
+      // Render current tab
+      renderTab(currentTab);
+    }
+
+    // ── DETECT CURRENT QUARTER ──
+    // Current quarter = the highest Q that has at least one grade encoded
+    // If nothing encoded yet, default to Q1
+    function detectCurrentQuarter(grades) {
+      let maxQ = 0;
+      grades.forEach(row => {
+        if (row.q1 !== null) maxQ = Math.max(maxQ, 1);
+        if (row.q2 !== null) maxQ = Math.max(maxQ, 2);
+        if (row.q3 !== null) maxQ = Math.max(maxQ, 3);
+        if (row.q4 !== null) maxQ = Math.max(maxQ, 4);
+      });
+      return Math.max(maxQ, 1);
+    }
+
+    // ── CHECK IF A QUARTER IS FULLY ENCODED (at least 1 subject has that Q grade) ──
+    function hasAnyGradeForQ(grades, q) {
+      const key = `q${q}`;
+      return grades.some(row => row[key] !== null);
+    }
+
+    // ── SETUP TABS ──
+    function setupTabs() {
+      const grades = gradesData.grades;
+      const tabs = document.querySelectorAll(".q-tab");
+
+      tabs.forEach(tab => {
+        const q = parseInt(tab.dataset.q);
+        tab.classList.remove("active", "done", "pending");
+
+        if (q < currentQuarter) {
+          tab.classList.add("done");
+          tab.disabled = false;
+        } else if (q === currentQuarter) {
+          tab.classList.add("active");
+          tab.disabled = false;
+        } else {
+          tab.classList.add("pending");
+          tab.disabled = true;
+        }
+      });
+    }
+
+    // ── SWITCH TAB ──
+    function switchTab(q) {
+      if (q > currentQuarter) return; // pending
+      currentTab = q;
+
+      const tabs = document.querySelectorAll(".q-tab");
+      tabs.forEach(t => {
+        t.classList.remove("active");
+        if (parseInt(t.dataset.q) === q) t.classList.add("active");
+      });
+
+      renderTab(q);
+    }
+
+    // ── RENDER TAB CONTENT ──
+    function renderTab(q) {
+      const grades = gradesData.grades;
+
+      // Period badge
+      renderPeriodBadge(q, grades);
+
+      // Summary cards
+      renderSummaryCards(q, grades);
+
+      // Subject cards
+      renderSubjectCards(q, grades);
+
+      // Overall card (only Q4 and all done)
+      renderOverallCard(grades);
+    }
+
+    // ── PERIOD BADGE ──
+    function renderPeriodBadge(q, grades) {
+      const badge = document.getElementById("periodBadge");
+      const text  = document.getElementById("periodText");
+
+      const allQ4Done = grades.every(r => r.q4 !== null);
+
+      badge.className = "period-badge";
+
+      if (allQ4Done) {
+        badge.classList.add("green");
+        text.textContent = "School year complete";
+      } else if (currentQuarter === 1) {
+        badge.classList.add("blue");
+        text.textContent = "1st quarter in progress";
+      } else if (currentQuarter === 2) {
+        badge.classList.add("amber");
+        text.textContent = "2nd quarter in progress";
+      } else if (currentQuarter === 3) {
+        badge.classList.add("amber");
+        text.textContent = "3rd quarter in progress";
+      } else {
+        badge.classList.add("blue");
+        text.textContent = "4th quarter in progress";
+      }
+    }
+
+    // ── SUMMARY CARDS ──
+    function renderSummaryCards(q, grades) {
+      const qAvgLabel = document.getElementById("qAvgLabel");
+      const qAvgValue = document.getElementById("qAvgValue");
+      const qAvgNote  = document.getElementById("qAvgNote");
+      const genAvgValue = document.getElementById("genAvgValue");
+      const genAvgNote  = document.getElementById("genAvgNote");
+
+      const suffix = ["", "1st", "2nd", "3rd", "4th"];
+      qAvgLabel.textContent = `${suffix[q]} Quarter Avg`;
+
+      // Compute average for the selected quarter (running avg up to Q)
+      const avgs = computeSubjectAvgs(q, grades);
+      const validAvgs = avgs.filter(a => a !== null);
+
+      if (validAvgs.length > 0) {
+        const qAvg = validAvgs.reduce((s, v) => s + v, 0) / validAvgs.length;
+        qAvgValue.textContent = qAvg.toFixed(2);
+        qAvgValue.className = "summary-value " + (qAvg >= 75 ? "green" : "red");
+        qAvgNote.textContent = "";
+      } else {
+        qAvgValue.textContent = "—";
+        qAvgValue.className = "summary-value gray";
+        qAvgNote.textContent = "No grades yet";
+      }
+
+      // General average — only if Q4 has data
+      const allQ4Done = grades.every(r => r.q4 !== null);
+      if (allQ4Done) {
+        const genAvgs = computeSubjectAvgs(4, grades);
+        const validGen = genAvgs.filter(a => a !== null);
+        if (validGen.length > 0) {
+          const gen = validGen.reduce((s, v) => s + v, 0) / validGen.length;
+          genAvgValue.textContent = gen.toFixed(2);
+          genAvgValue.className = "summary-value " + (gen >= 75 ? "green" : "red");
+          genAvgNote.textContent = gen >= 75 ? "Passed" : "Failed";
+        }
+      } else {
+        genAvgValue.textContent = "—";
+        genAvgValue.className = "summary-value gray";
+        genAvgNote.textContent = "Available after Q4";
+      }
+    }
+
+    // ── OVERALL CARD ──
+    function renderOverallCard(grades) {
+      const card = document.getElementById("overallCard");
+      const allQ4Done = grades.every(r => r.q4 !== null);
+
+      if (!allQ4Done || currentTab !== 4) {
+        card.style.display = "none";
+        return;
+      }
+
+      const avgs = computeSubjectAvgs(4, grades).filter(a => a !== null);
+      if (avgs.length === 0) { card.style.display = "none"; return; }
+
+      const gen = avgs.reduce((s, v) => s + v, 0) / avgs.length;
+      const passed = gen >= 75;
+
+      document.getElementById("overallAvgDisplay").textContent = gen.toFixed(2);
+      document.getElementById("overallAvgDisplay").className = "overall-avg " + (passed ? "passed" : "failed");
+      document.getElementById("overallPill").textContent = passed ? "Passed" : "Failed";
+      document.getElementById("overallPill").className = "big-pill " + (passed ? "passed" : "failed");
+      card.style.display = "flex";
+    }
+
+    // ── SUBJECT CARDS ──
+    function renderSubjectCards(q, grades) {
+      const container = document.getElementById("subjectCards");
+      container.innerHTML = "";
+
+      // Sort grades by subject order
+      const sorted = [...grades].sort((a, b) => {
+        const ia = SUBJECTS_ORDER.indexOf(a.subject);
+        const ib = SUBJECTS_ORDER.indexOf(b.subject);
+        if (ia === -1 && ib === -1) return 0;
+        if (ia === -1) return 1;
+        if (ib === -1) return -1;
+        return ia - ib;
+      });
+
+      sorted.forEach((row, idx) => {
+        const card = document.createElement("div");
+        card.className = "subject-card";
+        card.style.animationDelay = (idx * 0.04) + "s";
+
+        // Subject average (running avg up to selected Q)
+        const avg = computeRunningAvg(row, q);
+        const avgPassed = avg !== null && avg >= 75;
+        const avgFailed = avg !== null && avg < 75;
+
+        // Remarks pill — only show if at least one Q is encoded
+        const hasAny = row.q1 !== null || row.q2 !== null || row.q3 !== null || row.q4 !== null;
+        const pillHtml = hasAny && avg !== null
+          ? `<span class="pill ${avgPassed ? 'passed' : 'failed'}">${avgPassed ? 'Passed' : 'Failed'}</span>`
+          : '';
+
+        const avgDisplay = avg !== null
+          ? `<span class="subject-avg ${avgPassed ? 'passed' : 'failed'}">${avg.toFixed(0)}</span>${pillHtml}`
+          : `<span class="subject-avg pending">—</span>`;
+
+        // Quarter cells
+        const cells = [1, 2, 3, 4].map(qn => {
+          const val = row[`q${qn}`];
+          const isHighlighted = qn === q;
+          const isPending = qn > currentQuarter;
+          let cellValueHtml;
+          if (isPending) {
+            cellValueHtml = `<div class="cell-value dash">—</div>`;
+          } else if (val === null) {
+            cellValueHtml = `<div class="cell-value dash">—</div>`;
+          } else {
+            const low = val < 75;
+            cellValueHtml = `<div class="cell-value ${low ? 'low' : ''}">${val}</div>`;
+          }
+          return `
+            <div class="grade-cell ${isHighlighted ? 'highlighted' : ''}">
+              <div class="cell-label">Q${qn}</div>
+              ${cellValueHtml}
+            </div>`;
+        }).join("");
+
+        card.innerHTML = `
+          <div class="card-top">
+            <span class="subject-name">${row.subject}</span>
+            <div style="display:flex;align-items:center;">${avgDisplay}</div>
+          </div>
+          <div class="card-grades">${cells}</div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // ── HELPERS ──
+
+    // Running average of all encoded quarters UP TO q
+    function computeRunningAvg(row, q) {
+      const vals = [];
+      for (let i = 1; i <= q; i++) {
+        const v = row[`q${i}`];
+        if (v !== null) vals.push(Number(v));
+      }
+      if (vals.length === 0) return null;
+      return vals.reduce((s, v) => s + v, 0) / vals.length;
+    }
+
+    // Compute per-subject running averages for all subjects
+    function computeSubjectAvgs(q, grades) {
+      return grades.map(row => computeRunningAvg(row, q));
+    }
+
+    // ── UI HELPERS ──
+    function showLoading(on) {
+      document.getElementById("loadingState").style.display = on ? "flex" : "none";
+    }
+
+    function showError(msg) {
+      document.getElementById("errorText").textContent = msg;
+      document.getElementById("errorState").style.display = "block";
+    }
+
+    function hideError() {
+      document.getElementById("errorState").style.display = "none";
+    }
+
+    // ── START ──
+    loadGrades();
+  </script>
+
+</body>
+</html>

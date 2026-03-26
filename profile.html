@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile — Baganga NHS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:        #1a56db;
+      --blue-dark:   #1341b0;
+      --blue-light:  #e8f0fe;
+      --green:       #16a34a;
+      --green-light: #dcfce7;
+      --red:         #dc2626;
+      --red-light:   #fef2f2;
+      --gray-50:     #f8fafc;
+      --gray-100:    #f1f5f9;
+      --gray-200:    #e2e8f0;
+      --gray-400:    #94a3b8;
+      --gray-500:    #64748b;
+      --gray-600:    #475569;
+      --gray-900:    #0f172a;
+      --white:       #ffffff;
+      --radius:      14px;
+      --shadow:      0 2px 12px rgba(0,0,0,0.08);
+      --nav-h:       64px;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--gray-50);
+      min-height: 100vh;
+      padding-bottom: calc(var(--nav-h) + 16px);
+    }
+
+    /* ── TOP HEADER ── */
+    .top-header {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 16px 20px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .header-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+
+    /* ── MAIN ── */
+    .main {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px 16px 0;
+    }
+
+    /* ── LOADING ── */
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      gap: 14px;
+    }
+
+    .loading-spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text { font-size: 14px; color: var(--gray-500); font-weight: 500; }
+
+    /* ── CONTENT ── */
+    .content { display: none; animation: fadeIn 0.35s ease both; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── AVATAR CARD ── */
+    .avatar-card {
+      background: var(--blue);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 20px rgba(26,86,219,0.25);
+    }
+
+    .avatar-circle {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 26px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -1px;
+    }
+
+    .avatar-info { flex: 1; min-width: 0; }
+
+    .avatar-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+
+    .avatar-section {
+      font-size: 13px;
+      color: rgba(255,255,255,0.75);
+      font-weight: 500;
+    }
+
+    /* ── INFO CARD ── */
+    .info-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--gray-100);
+      gap: 14px;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+
+    .info-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: var(--blue-light);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .info-icon svg {
+      width: 18px; height: 18px;
+      stroke: var(--blue);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .info-body { flex: 1; min-width: 0; }
+
+    .info-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gray-400);
+      margin-bottom: 2px;
+    }
+
+    .info-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-400);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      margin-top: 6px;
+    }
+
+    /* ── ACTION CARD ── */
+    .action-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .action-row {
+      display: flex;
+      align-items: center;
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--gray-100);
+      gap: 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+      text-decoration: none;
+    }
+
+    .action-row:last-child { border-bottom: none; }
+    .action-row:hover { background: var(--gray-50); }
+
+    .action-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .action-icon.blue  { background: var(--blue-light); }
+    .action-icon.red   { background: var(--red-light); }
+
+    .action-icon svg {
+      width: 18px; height: 18px;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .action-icon.blue svg { stroke: var(--blue); }
+    .action-icon.red  svg { stroke: var(--red); }
+
+    .action-label {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .action-row.blue-row .action-label { color: var(--gray-900); }
+    .action-row.red-row  .action-label { color: var(--red); }
+
+    .action-chevron {
+      width: 16px; height: 16px;
+      stroke: var(--gray-400);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ── SCHOOL FOOTER ── */
+    .school-footer {
+      text-align: center;
+      padding: 8px 0 4px;
+    }
+
+    .school-footer-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-400);
+    }
+
+    .school-footer-sub {
+      font-size: 11px;
+      color: var(--gray-300);
+      margin-top: 2px;
+    }
+
+    /* ── LOGOUT CONFIRM OVERLAY ── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.45);
+      z-index: 200;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .overlay.show { display: flex; }
+
+    .overlay-card {
+      background: var(--white);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 24px 24px 32px;
+      width: 100%;
+      max-width: 500px;
+      animation: slideUp 0.25s ease both;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    .overlay-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+    }
+
+    .overlay-sub {
+      font-size: 14px;
+      color: var(--gray-500);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .overlay-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-logout-confirm {
+      width: 100%;
+      padding: 13px;
+      background: var(--red);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-logout-confirm:hover { background: #b91c1c; }
+
+    .btn-cancel {
+      width: 100%;
+      padding: 13px;
+      background: var(--gray-100);
+      color: var(--gray-700);
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-cancel:hover { background: var(--gray-200); }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: var(--white);
+      border-top: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 20px;
+      border-radius: 10px;
+      transition: background 0.15s;
+      color: var(--gray-400);
+    }
+
+    .nav-btn.active { color: var(--blue); }
+    .nav-btn:hover  { background: var(--gray-100); }
+
+    .nav-btn svg {
+      width: 22px; height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .nav-label { font-size: 11px; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="top-header">
+    <div class="header-inner">
+      <div class="header-title">My Profile</div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="loading-state" id="loadingState">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Loading profile…</p>
+    </div>
+
+    <div class="content" id="content">
+
+      <!-- Avatar Card -->
+      <div class="avatar-card">
+        <div class="avatar-circle" id="avatarInitials">—</div>
+        <div class="avatar-info">
+          <div class="avatar-name" id="profileName">—</div>
+          <div class="avatar-section" id="profileSection">—</div>
+        </div>
+      </div>
+
+      <!-- Info rows -->
+      <div class="info-card">
+        <div class="info-row">
+          <div class="info-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          </div>
+          <div class="info-body">
+            <div class="info-label">Learner Reference Number</div>
+            <div class="info-value" id="profileLrn">—</div>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="info-icon">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="info-body">
+            <div class="info-label">Section</div>
+            <div class="info-value" id="profileSectionDetail">—</div>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="info-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <div class="info-body">
+            <div class="info-label">School Year</div>
+            <div class="info-value">2024 – 2025</div>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="info-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+          </div>
+          <div class="info-body">
+            <div class="info-label">School</div>
+            <div class="info-value">Baganga National High School</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="section-label">Account</div>
+      <div class="action-card">
+        <a class="action-row blue-row" href="change-password.html">
+          <div class="action-icon blue">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <span class="action-label">Change Password</span>
+          <svg class="action-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+        <div class="action-row red-row" id="logoutBtn">
+          <div class="action-icon red">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </div>
+          <span class="action-label">Log Out</span>
+          <svg class="action-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+
+      <!-- School footer -->
+      <div class="school-footer">
+        <div class="school-footer-name">Baganga National High School</div>
+        <div class="school-footer-sub">Grade Portal · DepEd JHS</div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- LOGOUT CONFIRM OVERLAY -->
+  <div class="overlay" id="logoutOverlay">
+    <div class="overlay-card">
+      <div class="overlay-title">Log out?</div>
+      <div class="overlay-sub">You will be returned to the login page. Make sure you remember your password before logging out.</div>
+      <div class="overlay-btns">
+        <button class="btn-logout-confirm" id="confirmLogoutBtn">Yes, Log Out</button>
+        <button class="btn-cancel" id="cancelLogoutBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn" onclick="window.location.href='dashboard.html'">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="nav-label">Grades</span>
+    </button>
+    <button class="nav-btn active">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="nav-label">Profile</span>
+    </button>
+    <button class="nav-btn" onclick="window.location.href='change-password.html'">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span class="nav-label">Password</span>
+    </button>
+  </nav>
+
+  <script src="config.js"></script>
+  <script>
+    const API_URL = CENTRAL_API;
+
+    const token = localStorage.getItem("gp_token");
+    const lrn   = localStorage.getItem("gp_lrn");
+    if (!token || !lrn) window.location.href = "index.html";
+
+    // ── LOAD PROFILE ──
+    async function loadProfile() {
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "getGrades", lrn, token })
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+          // Fall back to just showing LRN from localStorage
+          renderFallback();
+          return;
+        }
+
+        renderProfile(data.name, data.section, lrn);
+
+      } catch (err) {
+        renderFallback();
+      } finally {
+        document.getElementById("loadingState").style.display = "none";
+        document.getElementById("content").style.display = "block";
+      }
+    }
+
+    function renderProfile(name, section, lrnVal) {
+      document.getElementById("profileName").textContent = name;
+      document.getElementById("profileSection").textContent = section;
+      document.getElementById("profileLrn").textContent = lrnVal;
+      document.getElementById("profileSectionDetail").textContent = section;
+
+      // Avatar initials — first letter of first name + first letter of last name
+      const parts = name.trim().split(" ");
+      let initials = parts[0]?.[0] ?? "?";
+      if (parts.length > 1) initials += parts[parts.length - 1][0];
+      document.getElementById("avatarInitials").textContent = initials.toUpperCase();
+    }
+
+    function renderFallback() {
+      document.getElementById("profileName").textContent = "Student";
+      document.getElementById("profileSection").textContent = "—";
+      document.getElementById("profileLrn").textContent = lrn;
+      document.getElementById("profileSectionDetail").textContent = "—";
+      document.getElementById("avatarInitials").textContent = "S";
+    }
+
+    // ── LOGOUT ──
+    const overlay       = document.getElementById("logoutOverlay");
+    const logoutBtn     = document.getElementById("logoutBtn");
+    const confirmLogout = document.getElementById("confirmLogoutBtn");
+    const cancelLogout  = document.getElementById("cancelLogoutBtn");
+
+    logoutBtn.addEventListener("click", () => overlay.classList.add("show"));
+    cancelLogout.addEventListener("click", () => overlay.classList.remove("show"));
+
+    // Close overlay on backdrop tap
+    overlay.addEventListener("click", e => {
+      if (e.target === overlay) overlay.classList.remove("show");
+    });
+
+    confirmLogout.addEventListener("click", () => {
+      localStorage.removeItem("gp_token");
+      localStorage.removeItem("gp_lrn");
+      window.location.href = "index.html";
+    });
+
+    // ── START ──
+    loadProfile();
+  </script>
+
+</body>
+</html>

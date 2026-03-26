@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grade Portal — Baganga NHS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:       #1a56db;
+      --blue-dark:  #1341b0;
+      --blue-light: #e8f0fe;
+      --red:        #dc2626;
+      --gray-50:    #f8fafc;
+      --gray-100:   #f1f5f9;
+      --gray-200:   #e2e8f0;
+      --gray-400:   #94a3b8;
+      --gray-600:   #475569;
+      --gray-900:   #0f172a;
+      --white:      #ffffff;
+      --radius:     14px;
+      --shadow:     0 4px 24px rgba(0,0,0,0.10);
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--gray-50);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    /* ── background accent ── */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -120px; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse at center, #dbeafe 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 400px;
+      padding: 40px 32px 36px;
+      animation: fadeUp 0.45s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── school branding ── */
+    .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .brand-icon {
+      width: 56px; height: 56px;
+      background: var(--blue);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .brand-icon svg { width: 28px; height: 28px; fill: white; }
+
+    .brand-school {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+    }
+
+    .brand-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1.2;
+    }
+
+    /* ── form fields ── */
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-600);
+      margin-bottom: 6px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--gray-900);
+      background: var(--white);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .field input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(26,86,219,0.12);
+    }
+
+    .field input::placeholder { color: var(--gray-400); }
+
+    /* ── password wrapper with toggle ── */
+    .pw-wrap {
+      position: relative;
+    }
+
+    .pw-wrap input { padding-right: 44px; }
+
+    .pw-toggle {
+      position: absolute;
+      right: 12px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--gray-400);
+      padding: 4px;
+      display: flex; align-items: center;
+    }
+
+    .pw-toggle:hover { color: var(--gray-600); }
+
+    /* ── error message ── */
+    .error-msg {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: var(--red);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+
+    .error-msg.show { display: block; }
+
+    /* ── submit button ── */
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: var(--blue);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 4px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+
+    .btn-login:hover  { background: var(--blue-dark); }
+    .btn-login:active { transform: scale(0.985); }
+    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* spinner */
+    .spinner {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    .btn-login.loading .spinner { display: block; }
+    .btn-login.loading .btn-text { display: none; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── footer note ── */
+    .note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--gray-400);
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="brand">
+      <div class="brand-icon">
+        <!-- graduation cap icon -->
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+        </svg>
+      </div>
+      <span class="brand-school">Baganga National High School</span>
+      <span class="brand-title">Grade Portal</span>
+    </div>
+
+    <div class="field">
+      <label for="lrn">Learner Reference Number (LRN)</label>
+      <input
+        type="text"
+        id="lrn"
+        placeholder="Enter your 12-digit LRN"
+        maxlength="12"
+        inputmode="numeric"
+        autocomplete="username"
+      />
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="pw-wrap">
+        <input
+          type="password"
+          id="password"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+        />
+        <button class="pw-toggle" id="pwToggle" type="button" aria-label="Toggle password visibility">
+          <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <button class="btn-login" id="loginBtn" type="button">
+      <span class="btn-text">Log In</span>
+      <div class="spinner"></div>
+    </button>
+
+    <p class="note">Use your LRN as your default password on first login.</p>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    const API_URL = CENTRAL_API;
+
+    const lrnInput   = document.getElementById("lrn");
+    const pwInput    = document.getElementById("password");
+    const loginBtn   = document.getElementById("loginBtn");
+    const errorMsg   = document.getElementById("errorMsg");
+    const pwToggle   = document.getElementById("pwToggle");
+    const eyeIcon    = document.getElementById("eyeIcon");
+
+    // ── password visibility toggle ──
+    pwToggle.addEventListener("click", () => {
+      const isHidden = pwInput.type === "password";
+      pwInput.type = isHidden ? "text" : "password";
+      eyeIcon.innerHTML = isHidden
+        ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
+        : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+    });
+
+    // ── allow Enter key to submit ──
+    [lrnInput, pwInput].forEach(el => {
+      el.addEventListener("keydown", e => {
+        if (e.key === "Enter") handleLogin();
+      });
+    });
+
+    loginBtn.addEventListener("click", handleLogin);
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.classList.add("show");
+    }
+
+    function clearError() {
+      errorMsg.classList.remove("show");
+    }
+
+    function setLoading(on) {
+      loginBtn.disabled = on;
+      loginBtn.classList.toggle("loading", on);
+    }
+
+    async function handleLogin() {
+      clearError();
+
+      const lrn      = lrnInput.value.trim();
+      const password = pwInput.value.trim();
+
+      if (!lrn) { showError("Please enter your LRN."); lrnInput.focus(); return; }
+      if (lrn.length !== 12 || !/^\d+$/.test(lrn)) {
+        showError("LRN must be exactly 12 digits."); lrnInput.focus(); return;
+      }
+      if (!password) { showError("Please enter your password."); pwInput.focus(); return; }
+
+      setLoading(true);
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "login", lrn, password })
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+          showError(data.message || "Login failed. Please try again.");
+          return;
+        }
+
+        // Save session
+        localStorage.setItem("gp_token", data.token);
+        localStorage.setItem("gp_lrn",   data.lrn);
+
+        // Redirect based on password status
+        if (data.passwordChanged === false || data.passwordChanged === "FALSE") {
+          window.location.href = "change-password.html?first=true";
+        } else {
+          window.location.href = "dashboard.html";
+        }
+
+      } catch (err) {
+        showError("Cannot connect to the server. Please check your internet connection.");
+      } finally {
+        setLoading(false);
+      }
+    }
+  </script>
+
+</body>
+</html>
