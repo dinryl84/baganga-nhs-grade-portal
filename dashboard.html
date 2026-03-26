@@ -643,7 +643,7 @@
       remarksEl.className   = 'remarks-pill ' + (passed ? 'pass' : 'fail');
     }
 
-    labelEl.textContent = Q_LABELS[activeQ] + ' average';
+    labelEl.textContent = activeQ === 3 ? 'Final average (all 4 quarters)' : Q_LABELS[activeQ] + ' grade';
     card.style.display  = 'flex';
   }
 
@@ -719,12 +719,20 @@
     });
   }
 
-  // ── Running average up to quarter index ──────────────────────
+  // ── Grade display per quarter ─────────────────────────────────
+  // Q1, Q2, Q3 → show that quarter's grade only
+  // Q4         → final average of all 4 quarters
   function subjectRunningAvg(g, upToQ) {
     const qs = [g.q1, g.q2, g.q3, g.q4];
-    const vals = qs.slice(0, upToQ + 1).filter(v => v !== null);
+
+    if (upToQ < 3) {
+      return qs[upToQ] !== null ? qs[upToQ] : null;
+    }
+
+    // Q4 — final average of all 4 quarters
+    const vals = qs.filter(v => v !== null);
     if (vals.length === 0) return null;
-    return vals.reduce((a, b) => a + b, 0) / vals.length;
+    return vals.reduce((a, b) => a + b, 0) / 4;
   }
 
   // ── UI helpers ───────────────────────────────────────────────
