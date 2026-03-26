@@ -635,7 +635,7 @@
       remarksEl.className   = 'remarks-pill pending';
     } else {
       const gen = validAvgs.reduce((a, b) => a + b, 0) / validAvgs.length;
-      avgEl.textContent = gen.toFixed(2);
+      avgEl.textContent = Math.round(gen);
 
       const passed = gen >= PASS;
       avgEl.className   = 'avg-value ' + (passed ? 'pass' : 'fail');
@@ -671,7 +671,7 @@
         avgText = '—';
         avgCls  = 'pending';
       } else {
-        avgText = avg.toFixed(2);
+        avgText = Math.round(avg);
         avgCls  = avg >= PASS ? 'pass' : 'fail';
       }
 
