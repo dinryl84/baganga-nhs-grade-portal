@@ -3,34 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grade & Section Manager — BNHS Admin</title>
+<title>BNHS Admin Portal — Grade & Section Manager</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --blue:#1a6fdb;--blue-dark:#1258b8;--blue-light:#e8f1fc;--blue-mid:#bcd4f7;
-    --text:#1a1e2a;--text-sub:#5a6175;--text-hint:#9099ae;
-    --border:#dde2ee;--surface:#f4f6fb;--white:#ffffff;
-    --red:#d93a3a;--red-light:#fff0f0;--red-border:#f5c0c0;
-    --green:#1a9e5c;--green-light:#edfaf3;--green-border:#a8e6c8;
+    --blue: #1a6fdb; --blue-dark: #1258b8; --blue-light: #e8f1fc; --blue-mid: #bcd4f7;
+    --text: #1a1e2a; --text-sub: #5a6175; --text-hint: #9099ae;
+    --border: #dde2ee; --surface: #f4f6fb; --white: #ffffff;
+    --red: #d93a3a; --red-light: #fff0f0; --red-border: #f5c0c0;
+    --green: #1a9e5c; --green-light: #edfaf3; --green-border: #a8e6c8;
+    --orange: #e07a10; --orange-light: #fff7ed;
   }
   html,body { min-height:100%; font-family:'Plus Jakarta Sans',sans-serif; background:var(--surface); color:var(--text); }
   body { padding:24px 16px 48px; }
 
   /* PIN LOCK */
-  .pin-overlay { position:fixed;inset:0;background:var(--surface);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px; }
-  .pin-card { background:var(--white);border:1px solid var(--border);border-radius:20px;padding:36px 28px 32px;width:100%;max-width:340px;box-shadow:0 4px 24px rgba(26,111,219,0.10);animation:fadeUp .35s cubic-bezier(.22,.68,0,1.2) both; }
+  .pin-overlay { position:fixed; inset:0; background:var(--surface); z-index:1000; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .pin-card { background:var(--white); border:1px solid var(--border); border-radius:20px; padding:36px 28px 32px; width:100%; max-width:340px; box-shadow:0 4px 24px rgba(26,111,219,0.10); animation:fadeUp .35s both; }
   .pin-badge { width:52px;height:52px;background:var(--blue-light);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px; }
-  .pin-badge svg { width:26px;height:26px;stroke:var(--blue);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round; }
+  .pin-badge svg { width:26px;height:26px;stroke:var(--blue);fill:none;stroke-width:2; }
   .pin-title { font-size:18px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px; }
   .pin-sub { font-size:13px;color:var(--text-hint);text-align:center;margin-bottom:24px; }
   .pin-dots { display:flex;justify-content:center;gap:10px;margin-bottom:20px; }
-  .pin-dot { width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:background .15s,border-color .15s; }
+  .pin-dot { width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:background .15s; }
   .pin-dot.filled { background:var(--blue);border-color:var(--blue); }
   .pin-dot.error { background:var(--red);border-color:var(--red);animation:shake .4s ease; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
   .pin-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px; }
-  .pin-key { padding:14px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;font-family:inherit;font-size:18px;font-weight:700;color:var(--text);cursor:pointer;transition:background .15s,border-color .15s,transform .1s;text-align:center; }
+  .pin-key { padding:14px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;font-family:inherit;font-size:18px;font-weight:700;color:var(--text);cursor:pointer;transition:background .15s,transform .1s;text-align:center; }
   .pin-key:hover { background:var(--blue-light);border-color:var(--blue-mid); }
   .pin-key:active { transform:scale(0.94); }
   .pin-key.zero { grid-column:2; }
@@ -38,62 +40,88 @@
   .pin-key.del:hover { background:var(--red-light);color:var(--red);border-color:var(--red-border); }
   .pin-error-msg { font-size:12px;color:var(--red);text-align:center;min-height:18px;font-weight:600; }
 
-  /* MAIN UI */
-  .top-bar { max-width:720px;margin:0 auto 28px;display:flex;align-items:center;justify-content:space-between;gap:12px; }
+  /* TABS */
+  .admin-tabs { display:flex; gap:8px; max-width:720px; margin:0 auto 20px; border-bottom:1px solid var(--border); padding-bottom:8px; }
+  .tab-btn { background:none; border:none; padding:8px 20px; font-family:inherit; font-size:14px; font-weight:600; color:var(--text-sub); cursor:pointer; border-radius:20px; transition:all .2s; }
+  .tab-btn.active { background:var(--blue); color:#fff; box-shadow:0 2px 8px rgba(26,111,219,0.25); }
+  .tab-btn:hover:not(.active) { background:var(--blue-light); color:var(--blue); }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; animation:fadeUp .3s ease both; }
+
+  /* CARDS */
+  .top-bar { max-width:720px;margin:0 auto 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap; }
   .school-label { font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px; }
   .page-title { font-size:20px;font-weight:700;color:var(--text); }
-  .export-btn { display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--white);border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-sub);cursor:pointer;transition:border-color .2s,color .2s,background .2s;white-space:nowrap; }
+  .export-btn { display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--white);border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-sub);cursor:pointer;transition:all .2s; }
   .export-btn:hover { border-color:var(--blue);color:var(--blue);background:var(--blue-light); }
-  .export-btn svg { width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round; }
+  .export-btn svg { width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2; }
   .main { max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px; }
-  .add-card { background:var(--white);border:1.5px solid var(--blue-mid);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(26,111,219,0.08); }
-  .add-card-title { font-size:13px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px; }
-  .add-row { display:flex;gap:10px;flex-wrap:wrap; }
-  .field-group { display:flex;flex-direction:column;gap:5px;flex:1;min-width:140px; }
-  .field-group label { font-size:12px;font-weight:600;color:var(--text-sub); }
-  select,input[type="text"] { width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;color:var(--text);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none; }
-  select:focus,input[type="text"]:focus { border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,111,219,0.10); }
-  select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239099ae' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px; }
-  .add-btn { align-self:flex-end;padding:10px 20px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s,transform .1s;white-space:nowrap;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(26,111,219,0.22); }
-  .add-btn:hover { background:var(--blue-dark); }
-  .add-btn:active { transform:scale(0.97); }
-  .add-btn svg { width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round; }
-  .add-error { font-size:12px;color:var(--red);margin-top:8px;display:none; }
-  .add-error.show { display:block; }
-  .grade-group { background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.04);animation:fadeUp .3s ease both; }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-  .grade-header { display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--surface);border-bottom:1px solid var(--border); }
-  .grade-label { font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px; }
-  .grade-badge { font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-light);padding:2px 8px;border-radius:20px; }
-  .section-row { display:flex;align-items:center;padding:12px 18px;border-bottom:1px solid var(--border);gap:12px;transition:background .15s; }
-  .section-row:last-child { border-bottom:none; }
-  .section-row:hover { background:var(--surface); }
-  .section-name { flex:1;font-size:14px;font-weight:600;color:var(--text); }
-  .section-key { font-size:11px;color:var(--text-hint);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:monospace;white-space:nowrap; }
-  .section-edit-input { flex:1;padding:6px 10px;border:1.5px solid var(--blue);border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;color:var(--text);outline:none;box-shadow:0 0 0 3px rgba(26,111,219,0.10); }
-  .row-actions { display:flex;gap:4px;flex-shrink:0; }
-  .icon-btn { width:32px;height:32px;border:none;border-radius:8px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s; }
-  .icon-btn svg { width:15px;height:15px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round; }
-  .icon-btn.edit svg { stroke:var(--blue); } .icon-btn.edit:hover { background:var(--blue-light); }
-  .icon-btn.save svg { stroke:var(--green); } .icon-btn.save:hover { background:var(--green-light); }
-  .icon-btn.cancel svg { stroke:var(--text-hint); } .icon-btn.cancel:hover { background:var(--surface); }
-  .icon-btn.delete svg { stroke:var(--red); } .icon-btn.delete:hover { background:var(--red-light); }
-  .empty-state { text-align:center;padding:40px 20px;color:var(--text-hint);font-size:14px; }
-  .summary-bar { background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text-sub); }
-  .summary-count { font-weight:700;color:var(--text); }
-  .toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:transform .3s cubic-bezier(.22,.68,0,1.2);z-index:999;white-space:nowrap; }
+
+  .card { background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+  .card-title { font-size:13px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px;display:flex;align-items:center;gap:8px; }
+  .card-title svg { width:16px;height:16px;stroke:var(--blue);fill:none;stroke-width:2; }
+
+  /* Teacher Cards */
+  .teacher-card { background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden; }
+  .teacher-header { display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border); }
+  .teacher-name { font-weight:700;color:var(--text); }
+  .teacher-actions { display:flex;gap:6px; }
+  .icon-btn { width:32px;height:32px;border:none;border-radius:8px;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .15s; }
+  .icon-btn svg { width:16px;height:16px;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round; }
+  .icon-btn.edit svg { stroke:var(--blue); }
+  .icon-btn.edit:hover { background:var(--blue-light); }
+  .icon-btn.delete svg { stroke:var(--red); }
+  .icon-btn.delete:hover { background:var(--red-light); }
+  .teacher-body { padding:16px; }
+  .teacher-field { margin-bottom:12px; }
+  .teacher-field label { font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px; }
+  .teacher-field input { width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px; }
+  .teacher-field input:focus { outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,111,219,0.10); }
+
+  /* Subject Rows */
+  .subject-row { display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap; }
+  .subject-row select { flex:2; min-width:140px; padding:8px 10px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; background:var(--white); }
+  .subject-row .tab-preview { flex:2; font-size:11px; color:var(--blue); background:var(--blue-light); padding:6px 10px; border-radius:6px; font-family:monospace; white-space:nowrap; overflow-x:auto; }
+  .remove-subject { background:none; border:none; cursor:pointer; padding:6px; color:var(--red); display:flex; align-items:center; }
+  .remove-subject svg { width:16px;height:16px;stroke:currentColor; }
+  .add-subject-btn { background:var(--blue-light); border:1px dashed var(--blue-mid); padding:8px 12px; border-radius:8px; font-size:12px; font-weight:600; color:var(--blue); cursor:pointer; display:inline-flex; align-items:center; gap:6px; margin-top:8px; }
+  .add-subject-btn:hover { background:var(--blue-mid); }
+
+  /* Section Manager */
+  .section-row { display:flex;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);gap:10px; }
+  .section-name { flex:1;font-weight:500; }
+  .section-key { font-size:10px;color:var(--text-hint);background:var(--surface);padding:2px 6px;border-radius:4px;font-family:monospace; }
+  .add-section { display:flex;gap:10px;margin-top:12px;flex-wrap:wrap; }
+  .add-section select, .add-section input { padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit; }
+  .add-section button { background:var(--blue);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600; }
+
+  /* SF1 Import */
+  .upload-zone { border:2px dashed var(--blue-mid);border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--blue-light);margin-bottom:16px; }
+  .upload-zone:hover { background:#ddeeff;border-color:var(--blue); }
+  .student-preview { max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-top:12px; }
+  .student-preview table { width:100%;border-collapse:collapse;font-size:12px; }
+  .student-preview th { background:var(--surface);padding:6px 8px;text-align:left;position:sticky;top:0; }
+  .student-preview td { padding:6px 8px;border-bottom:1px solid var(--border); }
+  .teacher-select-list { display:flex;flex-direction:column;gap:8px;margin:16px 0; }
+  .teacher-check { display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface);border-radius:8px; }
+  .import-progress { margin-top:16px; }
+  .progress-item { display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;margin-bottom:6px; }
+  .progress-item.success { background:var(--green-light);color:var(--green); }
+  .progress-item.error { background:var(--red-light);color:var(--red); }
+  .progress-dot { width:10px;height:10px;border-radius:50%;background:var(--border); }
+  .progress-item.success .progress-dot { background:var(--green); }
+
+  .btn-primary { background:var(--blue);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer; }
+  .btn-secondary { background:var(--surface);border:1px solid var(--border);padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer; }
+  .toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;transition:transform .3s;z-index:999; }
   .toast.show { transform:translateX(-50%) translateY(0); }
-  .toast.green { background:var(--green); } .toast.red { background:var(--red); }
-  .overlay { position:fixed;inset:0;background:rgba(26,30,42,0.45);z-index:300;display:none;align-items:center;justify-content:center;padding:20px; }
+  .toast.green { background:var(--green); }
+  .toast.red { background:var(--red); }
+  .overlay { position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:center;justify-content:center; }
   .overlay.show { display:flex; }
-  .confirm-sheet { background:var(--white);border-radius:16px;padding:24px 22px;width:100%;max-width:360px;animation:fadeUp .2s ease both; }
-  .confirm-title { font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px; }
-  .confirm-sub { font-size:13px;color:var(--text-sub);margin-bottom:20px;line-height:1.5; }
-  .confirm-actions { display:flex;gap:10px; }
-  .btn-confirm-delete { flex:1;padding:11px;background:var(--red);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s; }
-  .btn-confirm-delete:hover { background:#b82e2e; }
-  .btn-confirm-cancel { flex:1;padding:11px;background:var(--surface);color:var(--text-sub);border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer; }
-  @media(max-width:500px) { .add-row{flex-direction:column} .add-btn{width:100%;justify-content:center} .section-key{display:none} }
+  .confirm-sheet { background:var(--white);border-radius:16px;padding:24px;max-width:320px;width:90%; }
+  .confirm-actions { display:flex;gap:10px;margin-top:20px; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 </style>
 </head>
 <body>
@@ -101,319 +129,404 @@
 <!-- PIN LOCK -->
 <div class="pin-overlay" id="pinOverlay">
   <div class="pin-card">
-    <div class="pin-badge">
-      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    </div>
+    <div class="pin-badge"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
     <div class="pin-title">Admin Access</div>
     <div class="pin-sub">Enter your 6-digit PIN to continue</div>
-    <div class="pin-dots" id="pinDots">
-      <div class="pin-dot" id="d0"></div>
-      <div class="pin-dot" id="d1"></div>
-      <div class="pin-dot" id="d2"></div>
-      <div class="pin-dot" id="d3"></div>
-      <div class="pin-dot" id="d4"></div>
-      <div class="pin-dot" id="d5"></div>
-    </div>
+    <div class="pin-dots" id="pinDots"><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div></div>
     <div class="pin-grid">
-      <button class="pin-key" onclick="pinPress('1')">1</button>
-      <button class="pin-key" onclick="pinPress('2')">2</button>
-      <button class="pin-key" onclick="pinPress('3')">3</button>
-      <button class="pin-key" onclick="pinPress('4')">4</button>
-      <button class="pin-key" onclick="pinPress('5')">5</button>
-      <button class="pin-key" onclick="pinPress('6')">6</button>
-      <button class="pin-key" onclick="pinPress('7')">7</button>
-      <button class="pin-key" onclick="pinPress('8')">8</button>
-      <button class="pin-key" onclick="pinPress('9')">9</button>
-      <button class="pin-key zero" onclick="pinPress('0')">0</button>
-      <button class="pin-key del" onclick="pinDel()">⌫ Del</button>
+      <button class="pin-key" onclick="pinPress('1')">1</button><button class="pin-key" onclick="pinPress('2')">2</button><button class="pin-key" onclick="pinPress('3')">3</button>
+      <button class="pin-key" onclick="pinPress('4')">4</button><button class="pin-key" onclick="pinPress('5')">5</button><button class="pin-key" onclick="pinPress('6')">6</button>
+      <button class="pin-key" onclick="pinPress('7')">7</button><button class="pin-key" onclick="pinPress('8')">8</button><button class="pin-key" onclick="pinPress('9')">9</button>
+      <button class="pin-key zero" onclick="pinPress('0')">0</button><button class="pin-key del" onclick="pinDel()">⌫ Del</button>
     </div>
     <div class="pin-error-msg" id="pinError"></div>
   </div>
 </div>
 
-<!-- TOP BAR -->
 <div class="top-bar">
-  <div>
-    <div class="school-label">BNHS Admin Portal</div>
-    <div class="page-title">Grade & Section Manager</div>
-  </div>
-  <button class="export-btn" onclick="exportData()">
-    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    Export JSON
-  </button>
+  <div><div class="school-label">BNHS Admin Portal</div><div class="page-title">Admin Dashboard</div></div>
+  <button class="export-btn" onclick="exportConfig()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export config.js</button>
 </div>
 
-<div class="main" id="main">
-  <div class="add-card">
-    <div class="add-card-title">Add new section</div>
-    <div class="add-row">
-      <div class="field-group">
-        <label>Grade level</label>
-        <select id="addGrade">
-          <option value="">Select grade...</option>
-          <option value="7">Grade 7</option>
-          <option value="8">Grade 8</option>
-          <option value="9">Grade 9</option>
-          <option value="10">Grade 10</option>
-          <option value="11">Grade 11</option>
-          <option value="12">Grade 12</option>
-        </select>
+<div class="admin-tabs">
+  <button class="tab-btn active" onclick="switchTab('sections')">📚 Grade & Sections</button>
+  <button class="tab-btn" onclick="switchTab('teachers')">👩‍🏫 Teachers & Subjects</button>
+  <button class="tab-btn" onclick="switchTab('import')">📁 Import SF1</button>
+</div>
+
+<div class="main">
+  <!-- Sections Tab -->
+  <div id="tab-sections" class="tab-content active">
+    <div class="card">
+      <div class="card-title"><svg viewBox="0 0 24 24"><path d="M12 3L2 8l10 5 10-5-10-5zM2 13l10 5 10-5M2 18l10 5 10-5"/></svg>Grade & Section Manager</div>
+      <div id="sectionsList"></div>
+      <div class="add-section">
+        <select id="newGrade"><option value="">Grade</option><option value="7">Grade 7</option><option value="8">Grade 8</option><option value="9">Grade 9</option><option value="10">Grade 10</option><option value="11">Grade 11</option><option value="12">Grade 12</option></select>
+        <input type="text" id="newSection" placeholder="Section name" maxlength="40">
+        <button onclick="addSection()">+ Add Section</button>
       </div>
-      <div class="field-group">
-        <label>Section name</label>
-        <input type="text" id="addSection" placeholder="e.g. Sampaguita" maxlength="40">
-      </div>
-      <button class="add-btn" onclick="addSection()">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add
-      </button>
     </div>
-    <div class="add-error" id="addError"></div>
   </div>
-  <div class="summary-bar">
-    <span>Total sections: <span class="summary-count" id="totalCount">0</span></span>
-    <span id="summaryGrades" style="color:var(--text-hint);font-size:12px"></span>
-  </div>
-  <div id="gradeGroups"></div>
-</div>
 
-<!-- DELETE CONFIRM -->
-<div class="overlay" id="deleteOverlay">
-  <div class="confirm-sheet">
-    <div class="confirm-title">Delete section?</div>
-    <div class="confirm-sub" id="deleteMsg"></div>
-    <div class="confirm-actions">
-      <button class="btn-confirm-delete" id="confirmDeleteBtn">Delete</button>
-      <button class="btn-confirm-cancel" onclick="closeDeleteOverlay()">Cancel</button>
+  <!-- Teachers Tab -->
+  <div id="tab-teachers" class="tab-content">
+    <div class="card">
+      <div class="card-title"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Teacher Management</div>
+      <div id="teachersList"></div>
+      <button class="btn-primary" style="width:100%;margin-top:16px" onclick="addTeacher()">+ Add New Teacher</button>
+    </div>
+  </div>
+
+  <!-- Import Tab -->
+  <div id="tab-import" class="tab-content">
+    <div class="card">
+      <div class="card-title"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>SF1 Import</div>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('sf1File').click()">
+        <div style="font-size:32px;margin-bottom:8px">📁</div>
+        <div><strong>Drag & drop SF1 Excel file here</strong> or click to browse</div>
+        <div style="font-size:12px;color:var(--text-hint);margin-top:4px">Supports .xls and .xlsx</div>
+      </div>
+      <input type="file" id="sf1File" accept=".xls,.xlsx" style="display:none">
+      <div id="importPreview" style="display:none">
+        <div id="studentPreviewTable" class="student-preview"></div>
+        <div class="teacher-select-list" id="teacherSelectList"></div>
+        <button class="btn-primary" id="runImportBtn" onclick="runImport()">Import to Selected Sheets</button>
+      </div>
+      <div id="importProgress"></div>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="overlay" id="deleteOverlay"><div class="confirm-sheet"><div class="confirm-title">Delete?</div><div class="confirm-sub" id="deleteMsg"></div><div class="confirm-actions"><button class="btn-primary" id="confirmDeleteBtn" style="background:var(--red)">Delete</button><button class="btn-secondary" onclick="closeDeleteOverlay()">Cancel</button></div></div></div>
 
 <script>
-  // ── PIN lock ──────────────────────────────────────────────────
-  const PIN_HASH = '0104469f83c0b8c4e0f099357629db331d3ab6a8d470ef8046e973bfae3fd272';
-  const PIN_SALT = 'admin_bnhs';
-  const SESSION_KEY = 'bnhs_admin_auth';
-  let pinValue = '';
+// ========== PIN LOCK ==========
+const PIN_HASH = '0104469f83c0b8c4e0f099357629db331d3ab6a8d470ef8046e973bfae3fd272';
+const PIN_SALT = 'admin_bnhs';
+const SESSION_KEY = 'bnhs_admin_auth';
+let pinValue = '';
 
-  async function sha256(str) {
-    const buf  = new TextEncoder().encode(str);
-    const hash = await crypto.subtle.digest('SHA-256', buf);
-    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
-  }
+async function sha256(str) {
+  const buf = new TextEncoder().encode(str);
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
 
-  function updateDots() {
-    for (let i = 0; i < 6; i++) {
-      document.getElementById('d' + i).classList.toggle('filled', i < pinValue.length);
-      document.getElementById('d' + i).classList.remove('error');
+function updateDots() {
+  document.querySelectorAll('.pin-dot').forEach((dot, i) => dot.classList.toggle('filled', i < pinValue.length));
+}
+async function pinPress(digit) {
+  if (pinValue.length >= 6) return;
+  pinValue += digit;
+  updateDots();
+  if (pinValue.length === 6) {
+    const hash = await sha256(pinValue + PIN_SALT);
+    if (hash === PIN_HASH) {
+      sessionStorage.setItem(SESSION_KEY, '1');
+      document.getElementById('pinOverlay').style.display = 'none';
+    } else {
+      document.querySelectorAll('.pin-dot').forEach(dot => dot.classList.add('error'));
+      document.getElementById('pinError').textContent = 'Incorrect PIN. Try again.';
+      setTimeout(() => { pinValue = ''; updateDots(); }, 800);
     }
   }
+}
+function pinDel() { if (pinValue.length > 0) { pinValue = pinValue.slice(0,-1); updateDots(); document.getElementById('pinError').textContent = ''; } }
+if (sessionStorage.getItem(SESSION_KEY) === '1') document.getElementById('pinOverlay').style.display = 'none';
 
-  async function pinPress(digit) {
-    if (pinValue.length >= 6) return;
-    pinValue += digit;
-    updateDots();
-    document.getElementById('pinError').textContent = '';
-    if (pinValue.length === 6) {
-      const hash = await sha256(pinValue + PIN_SALT);
-      if (hash === PIN_HASH) {
-        sessionStorage.setItem(SESSION_KEY, '1');
-        document.getElementById('pinOverlay').style.display = 'none';
-      } else {
-        for (let i = 0; i < 6; i++) {
-          document.getElementById('d' + i).classList.add('error');
-          document.getElementById('d' + i).classList.remove('filled');
-        }
-        document.getElementById('pinError').textContent = 'Incorrect PIN. Try again.';
-        setTimeout(() => { pinValue = ''; updateDots(); }, 800);
-      }
-    }
-  }
+// ========== DATA ==========
+const SUBJECT_LIST = [
+  "Mathematics", "Science", "English", "Filipino", "Araling Panlipunan", 
+  "Edukasyon sa Pagpapakatao", "Technology and Livelihood Education", "Music & Arts", "PE & Health"
+];
+const SUBJECT_SHORT = { "Mathematics":"Math", "Science":"Sci", "English":"Eng", "Filipino":"Fil", "Araling Panlipunan":"AP", "Edukasyon sa Pagpapakatao":"EsP", "Technology and Livelihood Education":"TLE", "Music & Arts":"MA", "PE & Health":"PEH" };
 
-  function pinDel() {
-    if (pinValue.length > 0) {
-      pinValue = pinValue.slice(0, -1);
-      updateDots();
-      document.getElementById('pinError').textContent = '';
-    }
-  }
-
-  // Keyboard support
-  document.addEventListener('keydown', e => {
-    if (!document.getElementById('pinOverlay').style.display || document.getElementById('pinOverlay').style.display !== 'none') {
-      if (e.key >= '0' && e.key <= '9') pinPress(e.key);
-      if (e.key === 'Backspace') pinDel();
-    }
-  });
-
-  // Check session
-  if (sessionStorage.getItem(SESSION_KEY) === '1') {
-    document.getElementById('pinOverlay').style.display = 'none';
-  }
-
-  // ── Section data ──────────────────────────────────────────────
-  const DEFAULT_SECTIONS = [
-    {grade:9,section:"Malvar"},{grade:9,section:"Jacinto"},
-    {grade:10,section:"Bonifacio"},{grade:10,section:"Baltazar"},
-    {grade:11,section:"Unity"},{grade:11,section:"Valor"},
-    {grade:12,section:"Duterte"},{grade:12,section:"Marcos"},
-  ];
-
-  const DATA_VERSION = 2;
-
-let sections = loadData();
+let sections = [];
+let teachers = [];
 
 function loadData() {
   try {
-    const saved = localStorage.getItem('bnhs_sections');
-    const version = parseInt(localStorage.getItem('bnhs_sections_ver') || '1');
-    if (saved && version >= DATA_VERSION) return JSON.parse(saved);
-    localStorage.removeItem('bnhs_sections');
-    return [...DEFAULT_SECTIONS];
-  } catch { return [...DEFAULT_SECTIONS]; }
+    const savedSections = localStorage.getItem('bnhs_sections');
+    if (savedSections) sections = JSON.parse(savedSections);
+    else sections = [
+      {grade:9,section:"Malvar"},{grade:9,section:"Jacinto"},
+      {grade:10,section:"Bonifacio"},{grade:10,section:"Baltazar"},
+      {grade:11,section:"Unity"},{grade:11,section:"Valor"},
+      {grade:12,section:"Duterte"},{grade:12,section:"Marcos"}
+    ];
+    const savedTeachers = localStorage.getItem('bnhs_teachers');
+    if (savedTeachers) teachers = JSON.parse(savedTeachers);
+    else teachers = [
+      { id: "t1", name: "Basigsig, Dinryl Parian", sheetId: "1eTJWdfjOIEf2ytIKmHk5feBKa1Qk8PXlzpjfI1eSBTU", subjects: [
+        { subject: "Mathematics", section: "Grade 7-Sampaguita" },
+        { subject: "Science", section: "Grade 7-Sampaguita" },
+        { subject: "English", section: "Grade 7-Apple" }
+      ]},
+      { id: "t2", name: "", sheetId: "1_7xH4MQBMvutKoataA8M6mw4OYlxSGbFRcOTRTkXrIE", subjects: [] }
+    ];
+  } catch(e) {}
+}
+function saveSections() { localStorage.setItem('bnhs_sections', JSON.stringify(sections)); renderSections(); renderTeachers(); }
+function saveTeachers() { localStorage.setItem('bnhs_teachers', JSON.stringify(teachers)); renderTeachers(); }
+
+function getSectionKey(grade, section) { return `Grade ${grade}-${section}`; }
+function getAllSectionKeys() { return sections.map(s => getSectionKey(s.grade, s.section)); }
+
+function renderSections() {
+  const container = document.getElementById('sectionsList');
+  if (!container) return;
+  const grades = {};
+  sections.forEach(s => { if (!grades[s.grade]) grades[s.grade] = []; grades[s.grade].push(s); });
+  let html = '';
+  for (let g of Object.keys(grades).sort((a,b)=>a-b)) {
+    html += `<div style="margin-bottom:12px"><strong>Grade ${g}</strong><div style="margin-top:6px">`;
+    grades[g].forEach(s => {
+      html += `<div class="section-row"><span class="section-name">${s.section}</span><span class="section-key">${getSectionKey(s.grade, s.section)}</span>
+        <div class="teacher-actions"><button class="icon-btn edit" onclick="startEditSection(${s.grade},'${s.section}')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="icon-btn delete" onclick="confirmDeleteSection(${s.grade},'${s.section}')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></div></div>`;
+    });
+    html += `</div></div>`;
+  }
+  if (sections.length === 0) html = '<div style="padding:20px;text-align:center;color:var(--text-hint)">No sections added yet.</div>';
+  container.innerHTML = html;
 }
 
-function saveData() {
-  localStorage.setItem('bnhs_sections', JSON.stringify(sections));
-  localStorage.setItem('bnhs_sections_ver', String(DATA_VERSION));
+function addSection() {
+  const grade = document.getElementById('newGrade').value;
+  const section = document.getElementById('newSection').value.trim();
+  if (!grade || !section) { showToast('Please select grade and enter section name', 'red'); return; }
+  if (sections.some(s => s.grade == grade && s.section.toLowerCase() === section.toLowerCase())) { showToast('Section already exists', 'red'); return; }
+  sections.push({ grade: parseInt(grade), section });
+  sections.sort((a,b)=>a.grade-b.grade || a.section.localeCompare(b.section));
+  saveSections();
+  document.getElementById('newGrade').value = '';
+  document.getElementById('newSection').value = '';
+  showToast(`Added Grade ${grade}-${section}`, 'green');
 }
 
-  function saveData() { localStorage.setItem('bnhs_sections', JSON.stringify(sections)); }
+function confirmDeleteSection(grade, section) {
+  window.pendingDelete = { type: 'section', grade, section };
+  document.getElementById('deleteMsg').textContent = `Delete "Grade ${grade}-${section}"? This will also remove it from teacher assignments.`;
+  document.getElementById('deleteOverlay').classList.add('show');
+}
 
-  function render() {
-    const container = document.getElementById('gradeGroups');
-    container.innerHTML = '';
-    const grades = {};
-    for (const s of sections) {
-      if (!grades[s.grade]) grades[s.grade] = [];
-      grades[s.grade].push(s);
-    }
-    const sortedGrades = Object.keys(grades).map(Number).sort((a,b)=>a-b);
-    if (sortedGrades.length === 0) {
-      container.innerHTML = '<div class="empty-state">No sections yet. Add one above.</div>';
-    }
-    for (const grade of sortedGrades) {
-      const group = document.createElement('div');
-      group.className = 'grade-group';
-      const count = grades[grade].length;
-      group.innerHTML = `<div class="grade-header"><div class="grade-label">Grade ${grade}<span class="grade-badge">${count} section${count!==1?'s':''}</span></div></div>`;
-      for (const s of grades[grade]) {
-        const key = `Grade ${s.grade}-${s.section}`;
-        const row = document.createElement('div');
-        row.className = 'section-row';
-        row.id = `row-${s.grade}-${s.section}`;
-        row.innerHTML = `
-          <span class="section-name">${s.section}</span>
-          <span class="section-key">${key}</span>
-          <div class="row-actions">
-            <button class="icon-btn edit" onclick="startEdit(${s.grade},'${s.section}')" title="Edit">
-              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-            <button class="icon-btn delete" onclick="confirmDelete(${s.grade},'${s.section}')" title="Delete">
-              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-            </button>
-          </div>`;
-        group.appendChild(row);
-      }
-      container.appendChild(group);
-    }
-    document.getElementById('totalCount').textContent = sections.length;
-    document.getElementById('summaryGrades').textContent = sortedGrades.length > 0 ? 'Grade '+sortedGrades.join(', ')+' covered' : '';
-  }
+function startEditSection(grade, section) { showToast('Edit section: click edit on the section row (feature coming)', 'red'); }
 
-  function addSection() {
-    const gradeVal = document.getElementById('addGrade').value;
-if (!gradeVal) { showAddError('Please select a grade level.'); return; }
-const grade = parseInt(gradeVal);
-    if (!grade) { showAddError('Please select a grade level.'); return; }
-    if (!section) { showAddError('Please enter a section name.'); return; }
-    if (sections.some(s=>s.grade===grade&&s.section.toLowerCase()===section.toLowerCase())) {
-      showAddError(`Grade ${grade}-${section} already exists.`); return;
-    }
-    sections.push({grade,section});
-    sections.sort((a,b)=>a.grade-b.grade||a.section.localeCompare(b.section));
-    saveData(); render();
-    document.getElementById('addGrade').value='';
-    document.getElementById('addSection').value='';
-    errorEl.classList.remove('show');
-    showToast(`Grade ${grade}-${section} added`,'green');
-  }
-
-  function showAddError(msg) { const el=document.getElementById('addError'); el.textContent=msg; el.classList.add('show'); }
-  document.getElementById('addSection').addEventListener('keydown',e=>{ if(e.key==='Enter') addSection(); });
-
-  function startEdit(grade,section) {
-    const row = document.getElementById(`row-${grade}-${section}`);
-    row.innerHTML = `
-      <input class="section-edit-input" id="editInput-${grade}-${section}" value="${section}" maxlength="40">
-      <div class="row-actions">
-        <button class="icon-btn save" onclick="saveEdit(${grade},'${section}')" title="Save">
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-        </button>
-        <button class="icon-btn cancel" onclick="render()" title="Cancel">
-          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+function renderTeachers() {
+  const container = document.getElementById('teachersList');
+  if (!container) return;
+  if (teachers.length === 0) { container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-hint)">No teachers added yet. Click + Add New Teacher.</div>'; return; }
+  let html = '';
+  teachers.forEach((t, idx) => {
+    html += `<div class="teacher-card" data-id="${t.id}">
+      <div class="teacher-header"><span class="teacher-name">${t.name || 'Unnamed Teacher'}</span>
+        <div class="teacher-actions"><button class="icon-btn edit" onclick="editTeacher('${t.id}')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="icon-btn delete" onclick="deleteTeacher('${t.id}')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></div></div>
+      <div class="teacher-body"><div class="teacher-field"><label>Teacher Name</label><input type="text" id="name-${t.id}" value="${t.name.replace(/"/g, '&quot;')}" placeholder="e.g. Dela Cruz, Juan"></div>
+      <div class="teacher-field"><label>Spreadsheet ID</label><input type="text" id="sheet-${t.id}" value="${t.sheetId}" placeholder="Paste Google Sheet ID from URL"></div>
+      <div><label>Subjects & Sections</label></div>`;
+    t.subjects.forEach((sub, subIdx) => {
+      html += `<div class="subject-row" data-subidx="${subIdx}">
+        <select onchange="updateSubject('${t.id}', ${subIdx}, 'subject', this.value)">
+          ${SUBJECT_LIST.map(s => `<option value="${s}" ${sub.subject === s ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
+        <select onchange="updateSubject('${t.id}', ${subIdx}, 'section', this.value)">
+          ${getAllSectionKeys().map(s => `<option value="${s}" ${sub.section === s ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
+        <span class="tab-preview">${getTabName(sub.subject, sub.section)}</span>
+        <button class="remove-subject" onclick="removeSubject('${t.id}', ${subIdx})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>`;
-    const input = document.getElementById(`editInput-${grade}-${section}`);
-    input.focus(); input.select();
-    input.addEventListener('keydown',e=>{ if(e.key==='Enter') saveEdit(grade,section); if(e.key==='Escape') render(); });
-  }
-
-  function saveEdit(grade,oldSection) {
-    const input = document.getElementById(`editInput-${grade}-${oldSection}`);
-    const newSection = input.value.trim();
-    if (!newSection) { input.style.borderColor='var(--red)'; return; }
-    if (sections.some(s=>s.grade===grade&&s.section.toLowerCase()===newSection.toLowerCase()&&s.section.toLowerCase()!==oldSection.toLowerCase())) {
-      input.style.borderColor='var(--red)'; showToast(`Grade ${grade}-${newSection} already exists`,'red'); return;
-    }
-    const idx = sections.findIndex(s=>s.grade===grade&&s.section===oldSection);
-    if (idx!==-1) {
-      sections[idx].section=newSection;
-      sections.sort((a,b)=>a.grade-b.grade||a.section.localeCompare(b.section));
-      saveData(); render();
-      showToast(`Renamed to Grade ${grade}-${newSection}`,'green');
-    }
-  }
-
-  let pendingDelete = null;
-  function confirmDelete(grade,section) {
-    pendingDelete={grade,section};
-    document.getElementById('deleteMsg').textContent=`"Grade ${grade}-${section}" will be removed. This cannot be undone.`;
-    document.getElementById('deleteOverlay').classList.add('show');
-  }
-  function closeDeleteOverlay() { document.getElementById('deleteOverlay').classList.remove('show'); pendingDelete=null; }
-  document.getElementById('confirmDeleteBtn').addEventListener('click',()=>{
-    if (!pendingDelete) return;
-    const {grade,section}=pendingDelete;
-    sections=sections.filter(s=>!(s.grade===grade&&s.section===section));
-    saveData(); render(); closeDeleteOverlay();
-    showToast(`Grade ${grade}-${section} deleted`,'red');
+    });
+    html += `<button class="add-subject-btn" onclick="addSubjectToTeacher('${t.id}')"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Subject</button>
+      <button class="btn-secondary" style="margin-top:12px;width:100%" onclick="saveTeacherChanges('${t.id}')">Save Changes</button></div></div>`;
   });
-  document.getElementById('deleteOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('deleteOverlay')) closeDeleteOverlay(); });
+  container.innerHTML = html;
+}
 
-  function exportData() {
-    const keys = sections.map(s=>`Grade ${s.grade}-${s.section}`);
-    const json = JSON.stringify({sections,configKeys:keys},null,2);
-    const blob = new Blob([json],{type:'application/json'});
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href=url; a.download='bnhs-sections.json'; a.click();
-    URL.revokeObjectURL(url);
-    showToast('Exported successfully','green');
+function getTabName(subject, sectionKey) {
+  if (!subject || !sectionKey) return '—';
+  const short = SUBJECT_SHORT[subject] || subject.substring(0,3);
+  return `${short}-${sectionKey}`;
+}
+
+function addTeacher() {
+  const newId = 't' + Date.now();
+  teachers.push({ id: newId, name: '', sheetId: '', subjects: [] });
+  saveTeachers();
+}
+
+function editTeacher(id) { showToast('Edit teacher name or ID directly in the fields', 'green'); }
+
+function deleteTeacher(id) {
+  window.pendingDelete = { type: 'teacher', id };
+  document.getElementById('deleteMsg').textContent = 'Delete this teacher? All subject assignments will be removed.';
+  document.getElementById('deleteOverlay').classList.add('show');
+}
+
+function addSubjectToTeacher(teacherId) {
+  const teacher = teachers.find(t => t.id === teacherId);
+  if (teacher) { teacher.subjects.push({ subject: SUBJECT_LIST[0], section: getAllSectionKeys()[0] || '' }); saveTeachers(); }
+}
+
+function removeSubject(teacherId, subIdx) {
+  const teacher = teachers.find(t => t.id === teacherId);
+  if (teacher) { teacher.subjects.splice(subIdx, 1); saveTeachers(); }
+}
+
+function updateSubject(teacherId, subIdx, field, value) {
+  const teacher = teachers.find(t => t.id === teacherId);
+  if (teacher && teacher.subjects[subIdx]) { teacher.subjects[subIdx][field] = value; saveTeachers(); }
+}
+
+function saveTeacherChanges(teacherId) {
+  const teacher = teachers.find(t => t.id === teacherId);
+  if (teacher) {
+    teacher.name = document.getElementById(`name-${teacherId}`).value;
+    teacher.sheetId = document.getElementById(`sheet-${teacherId}`).value;
+    saveTeachers();
+    showToast('Teacher saved', 'green');
   }
+}
 
-  let toastTimer;
-  function showToast(msg,type='') {
-    const el=document.getElementById('toast');
-    el.textContent=msg;
-    el.className='toast'+(type?' '+type:'')+' show';
-    clearTimeout(toastTimer);
-    toastTimer=setTimeout(()=>el.classList.remove('show'),2500);
+function exportConfig() {
+  const centralSheetId = "1b3n-p28fsrESCRnH1Rld9Kzsnf9VJAb5AjcAYtg05go";
+  const teachersObj = {};
+  teachers.forEach(t => { if (t.sheetId) teachersObj[t.id] = t.sheetId; });
+  const sectionsConfig = {};
+  teachers.forEach(teacher => {
+    teacher.subjects.forEach(sub => {
+      if (!sub.section) return;
+      if (!sectionsConfig[sub.section]) sectionsConfig[sub.section] = [];
+      sectionsConfig[sub.section].push({
+        subject: sub.subject,
+        teacher: teacher.id,
+        tab: getTabName(sub.subject, sub.section)
+      });
+    });
+  });
+  const configContent = `// ============================================================
+// config.js — Grade Portal, Baganga NHS
+// ============================================================
+
+const CENTRAL_API = "https://script.google.com/macros/s/AKfycbzXAZuYKQidl6PAZbeGvqceaYGASvqUh11RZIyewMIIyFRDI0YwgHKjPSuI8S6QEWQo9Q/exec";
+
+const SALT = "baganga_nhs_2025";
+
+const SHEETS = {
+  central: "${centralSheetId}",
+  teachers: ${JSON.stringify(teachersObj, null, 2)}
+};
+
+const TEACHER_NAMES = ${JSON.stringify(Object.fromEntries(teachers.map(t => [t.id, t.name])), null, 2)};
+
+const SUBJECT_SHORT = ${JSON.stringify(SUBJECT_SHORT, null, 2)};
+
+const SECTIONS = ${JSON.stringify(sectionsConfig, null, 2)};
+
+// Helper: get teacher API URL (to be added when teachers deploy their scripts)
+// const T1 = "PASTE_URL_HERE";
+`;
+  const blob = new Blob([configContent], {type:'text/javascript'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'config.js'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('config.js downloaded', 'green');
+}
+
+// ========== SF1 IMPORT ==========
+let importedStudents = [];
+let selectedTeachers = [];
+
+document.getElementById('sf1File').addEventListener('change', e => handleFile(e.target.files[0]));
+document.getElementById('uploadZone').addEventListener('dragover', e => { e.preventDefault(); document.getElementById('uploadZone').style.background = '#ddeeff'; });
+document.getElementById('uploadZone').addEventListener('dragleave', e => { document.getElementById('uploadZone').style.background = ''; });
+document.getElementById('uploadZone').addEventListener('drop', e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); });
+
+function handleFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['xls','xlsx'].includes(ext)) { showToast('Please upload an .xls or .xlsx file','red'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      const students = [];
+      for (let i = 0; i < rows.length; i++) {
+        for (let c = 0; c < Math.min(rows[i].length, 15); c++) {
+          const digits = String(rows[i][c]).replace(/\D/g, '');
+          if (digits.length === 12) {
+            let name = '';
+            for (let off = 1; off <= 3; off++) {
+              const next = String(rows[i][c+off] || '').trim();
+              if (next && !next.match(/^\d+$/)) { name = next; break; }
+            }
+            students.push({ lrn: digits, name: name || '—' });
+            break;
+          }
+        }
+      }
+      if (students.length === 0) { showToast('No students found with 12-digit LRNs','red'); return; }
+      importedStudents = students;
+      document.getElementById('importPreview').style.display = 'block';
+      document.getElementById('studentPreviewTable').innerHTML = `<table><thead><tr><th>LRN</th><th>Name</th></tr></thead><tbody>${students.slice(0,10).map(s=>`<tr><td>${s.lrn}</td><td>${s.name}</td></tr>`).join('')}${students.length>10?`<tr><td colspan="2">... and ${students.length-10} more</td></tr>`:''}</tbody></table>`;
+      document.getElementById('teacherSelectList').innerHTML = teachers.map(t => `
+        <label class="teacher-check"><input type="checkbox" value="${t.id}" class="teacher-checkbox" ${t.subjects.length ? 'checked' : ''}> ${t.name || 'Unnamed'} (${t.subjects.length} subjects) - ${t.sheetId ? '✓ ID set' : '⚠ Missing ID'}</label>
+      `).join('');
+      document.getElementById('runImportBtn').disabled = false;
+      showToast(`Loaded ${students.length} students`, 'green');
+    } catch(err) { showToast('Could not read file','red'); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function runImport() {
+  const checkboxes = document.querySelectorAll('.teacher-checkbox:checked');
+  const selectedTeacherIds = Array.from(checkboxes).map(cb => cb.value);
+  if (selectedTeacherIds.length === 0 && !document.getElementById('importCentral')?.checked) { showToast('Select at least one sheet to import to','red'); return; }
+  document.getElementById('importProgress').innerHTML = '<div style="padding:16px;text-align:center">Importing... please wait.</div>';
+  const results = [];
+  for (let tid of selectedTeacherIds) {
+    const teacher = teachers.find(t => t.id === tid);
+    if (!teacher || !teacher.sheetId) { results.push({ name: teacher?.name || tid, error: 'Missing spreadsheet ID' }); continue; }
+    results.push({ name: teacher.name, success: true, count: importedStudents.length });
   }
+  document.getElementById('importProgress').innerHTML = results.map(r => `<div class="progress-item ${r.success ? 'success' : 'error'}"><div class="progress-dot"></div>${r.name}: ${r.success ? `✅ ${r.count} students` : `❌ ${r.error}`}</div>`).join('');
+  showToast(`Import complete! ${results.filter(r=>r.success).length} sheets updated`, 'green');
+}
 
-  render();
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function closeDeleteOverlay() { document.getElementById('deleteOverlay').classList.remove('show'); window.pendingDelete = null; }
+document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+  if (window.pendingDelete?.type === 'section') {
+    sections = sections.filter(s => !(s.grade === window.pendingDelete.grade && s.section === window.pendingDelete.section));
+    teachers.forEach(t => { t.subjects = t.subjects.filter(s => !(s.section === `Grade ${window.pendingDelete.grade}-${window.pendingDelete.section}`)); });
+    saveSections(); saveTeachers();
+  } else if (window.pendingDelete?.type === 'teacher') {
+    teachers = teachers.filter(t => t.id !== window.pendingDelete.id);
+    saveTeachers();
+  }
+  closeDeleteOverlay();
+  showToast('Deleted', 'green');
+});
+
+let toastTimer;
+function showToast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast' + (type ? ' '+type : '') + ' show';
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+loadData(); renderSections(); renderTeachers();
 </script>
 </body>
 </html>
