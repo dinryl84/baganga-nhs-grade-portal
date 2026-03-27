@@ -1,1 +1,118 @@
-
+function handleFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['xls','xlsx'].includes(ext)) { 
+    showToast('Please upload an .xls or .xlsx file','red'); 
+    return; 
+  }
+  
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      
+      if (rows.length < 2) {
+        showToast('File appears empty','red');
+        return;
+      }
+      
+      // Step 1: Find header row (look for common SF1 column names)
+      let headerRowIndex = -1;
+      let columnMap = {};
+      
+      for (let i = 0; i < Math.min(15, rows.length); i++) {
+        const row = rows[i];
+        for (let c = 0; c < Math.min(row.length, 20); c++) {
+          const cell = String(row[c]).toLowerCase().trim();
+          if (cell.includes('lrn') || cell.includes('learner') || cell === 'lrn') {
+            headerRowIndex = i;
+            columnMap.lrn = c;
+          }
+          if (cell.includes('last') || cell.includes('apelyido') || cell === 'last name') columnMap.lastName = c;
+          if (cell.includes('first') || cell.includes('pangalan') || cell === 'first name') columnMap.firstName = c;
+          if (cell.includes('middle') || cell === 'middle name') columnMap.middleName = c;
+          if (cell.includes('sex') || cell.includes('gender') || cell === 'sex') columnMap.sex = c;
+        }
+        if (headerRowIndex !== -1) break;
+      }
+      
+      // Step 2: Parse students using column mapping or fallback to pattern detection
+      const students = [];
+      const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
+      
+      for (let i = startRow; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.length === 0) continue;
+        
+        let lrn = '';
+        let lastName = '', firstName = '', middleName = '', sex = '';
+        
+        // Try using column mapping first
+        if (headerRowIndex !== -1 && columnMap.lrn !== undefined) {
+          lrn = String(row[columnMap.lrn] || '').replace(/\D/g, '');
+          lastName = String(row[columnMap.lastName] || '').trim();
+          firstName = String(row[columnMap.firstName] || '').trim();
+          middleName = String(row[columnMap.middleName] || '').trim();
+          sex = String(row[columnMap.sex] || '').trim();
+        }
+        
+        // Fallback: search for 12-digit number (for SF1 without headers or custom format)
+        if (!lrn || lrn.length !== 12) {
+          for (let c = 0; c < Math.min(row.length, 15); c++) {
+            const cellValue = String(row[c]);
+            const digitsOnly = cellValue.replace(/\D/g, '');
+            
+            if (digitsOnly.length === 12) {
+              lrn = digitsOnly;
+              
+              // Try to locate name fields — look for non-empty string patterns
+              for (let offset = 1; offset <= 4; offset++) {
+                const nextCell = String(row[c + offset] || '').trim();
+                if (nextCell && !nextCell.match(/^\d+$/)) {
+                  if (!lastName && nextCell.length > 1) lastName = nextCell;
+                  else if (!firstName && nextCell.length > 1) firstName = nextCell;
+                  else if (!middleName && nextCell.length > 1) middleName = nextCell;
+                  else if (!sex && (nextCell.toLowerCase() === 'male' || nextCell.toLowerCase() === 'female' || nextCell === 'M' || nextCell === 'F')) sex = nextCell;
+                }
+              }
+              break;
+            }
+          }
+        }
+        
+        // Only add if we have a valid LRN and at least a name
+        if (lrn && lrn.length === 12 && (lastName || firstName)) {
+          students.push({
+            lrn,
+            lastName: lastName || '—',
+            firstName: firstName || '—',
+            middleName: middleName || '',
+            sex: sex || ''
+          });
+        }
+      }
+      
+      if (students.length === 0) {
+        showToast('No students found — check that LRNs are 12-digit numbers in the sheet','red');
+        return;
+      }
+      
+      // Rest of your code continues...
+      S.students = students;
+      
+      // ... rest of your existing update logic
+      zone.classList.add('has-file');
+      document.getElementById('uploadTitle').textContent = '✓ File loaded — ' + file.name;
+      document.getElementById('uploadSub').textContent = `${students.length} students parsed successfully`;
+      
+      // ... etc.
+      
+    } catch(err) {
+      console.error(err);
+      showToast('Could not read file — is it a valid SF1 Excel file?','red');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
