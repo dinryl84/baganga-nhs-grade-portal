@@ -11,7 +11,7 @@
 // ============================================================
 
 // ── Central API ───────────────────────────────────────────────
-const CENTRAL_API = "https://script.google.com/macros/s/AKfycbzXAZuYKQidl6PAZbeGvqceaYGASvqUh11RZIyewMIIyFRDI0YwgHKjPSuI8S6QEWQo9Q/exec";
+const CENTRAL_API = "https://script.google.com/macros/s/AKfycbxhlUgCZ-tg3tVq1i3SDVS9msEDCh80epni1N8ER98fzI7lsIS4Axw2Ldq1iF3x7quUEg/exec";
 
 // ── Salt ──────────────────────────────────────────────────────
 const SALT = "baganga_nhs_2025";
