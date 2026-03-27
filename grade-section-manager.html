@@ -261,14 +261,24 @@
     {grade:12,section:"Duterte"},{grade:12,section:"Marcos"},
   ];
 
-  let sections = loadData();
+  const DATA_VERSION = 2;
 
-  function loadData() {
-    try {
-      const saved = localStorage.getItem('bnhs_sections');
-      return saved ? JSON.parse(saved) : [...DEFAULT_SECTIONS];
-    } catch { return [...DEFAULT_SECTIONS]; }
-  }
+let sections = loadData();
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem('bnhs_sections');
+    const version = parseInt(localStorage.getItem('bnhs_sections_ver') || '1');
+    if (saved && version >= DATA_VERSION) return JSON.parse(saved);
+    localStorage.removeItem('bnhs_sections');
+    return [...DEFAULT_SECTIONS];
+  } catch { return [...DEFAULT_SECTIONS]; }
+}
+
+function saveData() {
+  localStorage.setItem('bnhs_sections', JSON.stringify(sections));
+  localStorage.setItem('bnhs_sections_ver', String(DATA_VERSION));
+}
 
   function saveData() { localStorage.setItem('bnhs_sections', JSON.stringify(sections)); }
 
@@ -314,9 +324,9 @@
   }
 
   function addSection() {
-    const grade   = parseInt(document.getElementById('addGrade').value);
-    const section = document.getElementById('addSection').value.trim();
-    const errorEl = document.getElementById('addError');
+    const gradeVal = document.getElementById('addGrade').value;
+if (!gradeVal) { showAddError('Please select a grade level.'); return; }
+const grade = parseInt(gradeVal);
     if (!grade) { showAddError('Please select a grade level.'); return; }
     if (!section) { showAddError('Please enter a section name.'); return; }
     if (sections.some(s=>s.grade===grade&&s.section.toLowerCase()===section.toLowerCase())) {
