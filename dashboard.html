@@ -516,7 +516,7 @@
       const results = await Promise.all(
         subjects.map(async (s) => {
           try {
-            const url = `${s.url}?action=getGrades&lrn=${encodeURIComponent(lrn)}&tab=${encodeURIComponent(s.tab)}`;
+            const url = `${s.url}?action=getGrades&lrn=${encodeURIComponent(lrn)}&tab=${encodeURIComponent(s.tab)}&_t=${Date.now()}`;
             const res = await fetch(url);
             const data = await res.json();
 
