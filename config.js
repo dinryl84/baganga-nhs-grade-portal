@@ -4,7 +4,7 @@
 // ============================================================
 
 // ── Central API ───────────────────────────────────────────────
-const CENTRAL_API = "https://script.google.com/macros/s/AKfycbyGJ1boc2W9Mk7F33UnMSCgCz63jQCVCpVbxWNHrLgt70iLKhvQoY1IPgzWL12sLDhnBw/exec";
+const CENTRAL_API = "https://script.google.com/macros/s/AKfycbx3uhPGPnjY-X8wPnz_Qveu47WC11zO7Ad1FSC5g1Y7UCz3pdqKmM_Sa9KfPt4m44WBhg/exec";
 
 // ── Salt ──────────────────────────────────────────────────────
 const SALT = "baganga_nhs_2025";
@@ -15,18 +15,14 @@ const TSHARED = "https://script.google.com/macros/s/AKfycbwdYC-DZR36LW1t3sXeN55M
 
 // ── Section registry ──────────────────────────────────────────
 const SECTIONS = {
-
   // ── GRADE 9 — Jacinto ────────────────────────────────────
   "Grade 9-Jacinto": [
     { subject: "Science", url: TSHARED, tab: "Science-Grade9-Jacinto" },
   ],
-
   // ── GRADE 12 — Marcos ────────────────────────────────────
   "Grade 12-Marcos": [
     { subject: "Araling Panlipunan", url: TSHARED, tab: "AP-Grade12-Marcos"   },
     { subject: "Mathematics",        url: TSHARED, tab: "Math-Grade12-Marcos" },
   ],
-
   // ── Add more sections below as you import them ────────────
-
 };
