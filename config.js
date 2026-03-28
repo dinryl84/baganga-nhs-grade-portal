@@ -16,20 +16,17 @@ const TSHARED = "https://script.google.com/macros/s/AKfycbwdYC-DZR36LW1t3sXeN55M
 // ── Section registry ──────────────────────────────────────────
 const SECTIONS = {
 
+  // ── GRADE 9 — Jacinto ────────────────────────────────────
+  "Grade 9-Jacinto": [
+    { subject: "Science", url: TSHARED, tab: "Science-Grade9-Jacinto" },
+  ],
+
   // ── GRADE 12 — Marcos ────────────────────────────────────
   "Grade 12-Marcos": [
     { subject: "Araling Panlipunan", url: TSHARED, tab: "AP-Grade12-Marcos"   },
     { subject: "Mathematics",        url: TSHARED, tab: "Math-Grade12-Marcos" },
   ],
 
-    // ── Grade 9-Jacinto ──
-  "Grade 9-Jacinto": [
-    { subject: "Science", url: "https://script.google.com/macros/s/AKfycbwdYC-DZR36LW1t3sXeN55MGYrUNiOIyP-ey8frG-q_8wv-Br0c7Ey6jLvxbucgE645kg/exec", tab: "Science-Grade9-Jacinto" },
-  ],
-
   // ── Add more sections below as you import them ────────────
-  // "Grade 12-Duterte": [
-  //   { subject: "Araling Panlipunan", url: TSHARED, tab: "AP-Grade12-Duterte" },
-  // ],
 
 };
