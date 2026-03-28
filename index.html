@@ -448,7 +448,9 @@
       return;
     }
 
-    // Hash the password
+    // Hash the password: sha256(password + SALT)
+    // Default password is the LRN itself, so first-time hash = sha256(lrn + SALT)
+    // This matches GAS: sha256(lrn + SALT) stored via fillDefaultPasswords()
     const hashed = await sha256(password + SALT);
 
     // Set loading state
@@ -463,6 +465,12 @@
       });
 
       const response = await fetch(`${CENTRAL_API}?${params}`);
+
+      // Guard: check if response is OK before parsing JSON
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
+
       const data = await response.json();
 
       if (data.success) {
@@ -473,16 +481,23 @@
         localStorage.setItem('gp_section', data.section);
 
         // Redirect
-        if (data.passwordChanged === false || data.passwordChanged === 'FALSE') {
+        // BUG FIX: passwordChanged comes back as boolean true/false from GAS
+        // Handle both boolean false and string 'FALSE' safely
+        const needsChange = (data.passwordChanged === false || data.passwordChanged === 'FALSE');
+        if (needsChange) {
           window.location.href = 'change-password.html?first=true';
         } else {
           window.location.href = 'dashboard.html';
         }
+
       } else {
-        showError(data.error || 'Incorrect LRN or password. Please try again.');
+        // BUG FIX: was data.error — GAS returns data.message
+        showError(data.message || 'Incorrect LRN or password. Please try again.');
       }
 
     } catch (err) {
+      // Show a more helpful error in development
+      console.error('Login error:', err);
       showError('Could not connect. Please check your internet and try again.');
     } finally {
       loginBtn.classList.remove('loading');
