@@ -11,7 +11,7 @@ const SALT = "baganga_nhs_2025";
 
 // ── Teacher API URLs ──────────────────────────────────────────
 // SHARED TEMPLATE URL — used for all teachers
-const TSHARED = "https://script.google.com/macros/s/AKfycbwdYC-DZR36LW1t3sXeN55MGYrUNiOIyP-ey8frG-q_8wv-Br0c7Ey6jLvxbucgE645kg/exec";
+const TSHARED = "https://script.google.com/macros/s/AKfycbyLGoR7U-qYijaGkCaPbc6wh54IfZZkZYJzWttRgVgT-1bBIltoa7mxP6VEnOSSq8y6/exec";
 
 // ── Section registry ──────────────────────────────────────────
 const SECTIONS = {
